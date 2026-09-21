@@ -1,0 +1,91 @@
+:root {
+  color-scheme: light;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  background: #eceff4;
+  font-family: 'Inter', system-ui, sans-serif;
+  color: var(--hz-text-primary);
+}
+
+a {
+  color: var(--hz-horizon-primary);
+  text-decoration: none;
+}
+a:hover {
+  color: var(--hz-horizon-primary-dark);
+}
+
+.om-nav {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  height: 56px;
+  padding: 0 20px;
+  background: var(--hz-surface-card);
+  border-bottom: 1px solid var(--hz-border-subtle);
+  flex: none;
+}
+.om-sep {
+  width: 1px;
+  height: 22px;
+  background: var(--hz-border-subtle);
+}
+.om-eyebrow {
+  font-size: 10.5px;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+  color: var(--hz-text-tertiary);
+  font-weight: 700;
+}
+.om-val {
+  font-family: 'IBM Plex Sans', Inter, sans-serif;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  color: var(--hz-text-primary);
+}
+.om-fact:last-child {
+  border-bottom: none !important;
+}
+
+.om-shell {
+  position: relative;
+  padding-left: 268px;
+  background: var(--hz-surface-page);
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+.om-sidebar-slot {
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 268px;
+  z-index: 1200;
+  display: flex;
+}
+.om-datepicker {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 12px;
+  border: 1px solid var(--hz-border-default);
+  border-radius: 8px;
+  background: #fff;
+}
+.om-datepicker input {
+  border: none;
+  outline: none;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--hz-text-primary);
+  background: transparent;
+}

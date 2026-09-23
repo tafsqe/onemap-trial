@@ -3,24 +3,20 @@
 // lists the % first then the bar — `labelFirst` switches the order.
 export default function AchievementBar({ barPct, label, tone, barHeight = 6, labelFirst = false, labelWidth = 44 }) {
   const bar = (
-    <span style={{ flex: 1, height: barHeight, borderRadius: 999, background: 'var(--hz-neutral-100)', overflow: 'hidden' }}>
-      <span style={{ display: 'block', height: '100%', width: barPct, background: tone }} />
+    <span className="flex-1 overflow-hidden rounded-full bg-neutral-100" style={{ height: barHeight }}>
+      <span className="block h-full" style={{ width: barPct, background: tone }} />
     </span>
   )
   const text = (
     <span
-      style={{
-        fontSize: 12.5,
-        fontWeight: labelFirst ? 700 : 600,
-        width: labelWidth,
-        textAlign: labelFirst ? 'left' : 'right',
-      }}
+      className={`text-[12.5px] ${labelFirst ? 'text-left font-bold' : 'text-right font-semibold'}`}
+      style={{ width: labelWidth }}
     >
       {label}
     </span>
   )
   return (
-    <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+    <div className="flex items-center gap-2.5">
       {labelFirst ? (
         <>
           {text}

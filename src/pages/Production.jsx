@@ -1,62 +1,59 @@
+import { useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import DateRangePicker from '../components/DateRangePicker.jsx'
 import PageShell from '../components/PageShell.jsx'
 import CategoryBar from '../components/CategoryBar.jsx'
 import AchievementBar from '../components/AchievementBar.jsx'
 import { ComboChart } from '../lib/ds.js'
-import { prodKpis3a, prodSeries, prodBarCats, prodLineCats, prodColors, prodLineColors, prodRows, ktFmt, pctWholeFmt } from '../data/dummy.js'
+import { PRODUCTION_BASELINE_RANGE, buildProductionData, prodBarCats, prodLineCats, prodColors, prodLineColors, ktFmt, pctWholeFmt } from '../data/dummy.js'
 
 export default function Production() {
   const navigate = useNavigate()
+  const [range, setRange] = useState(PRODUCTION_BASELINE_RANGE)
+  const { prodKpis3a, prodSeries, prodRows } = useMemo(() => buildProductionData(range), [range])
 
   return (
     <PageShell active="Dashboard">
-      <div className="om-nav">
-        <span className="hz-btn hz-btn--text hz-btn--sm" onClick={() => navigate('/')} style={{ cursor: 'pointer' }}>
+      <div className="flex h-14 items-center gap-3 border-b border-neutral-200 bg-white px-5">
+        <span onClick={() => navigate('/')} className="flex h-8 cursor-pointer items-center rounded-lg px-4 text-primary-600 hover:bg-primary-50">
           <i className="far fa-arrow-left" />
         </span>
-        <nav className="hz-breadcrumb">
-          <span className="hz-breadcrumb__item">Ringkasan</span>
-          <i className="far fa-chevron-right hz-breadcrumb__sep" />
-          <span className="hz-breadcrumb__item is-current">Production</span>
+        <nav className="flex flex-wrap items-center gap-2 text-xs text-neutral-500">
+          <span className="cursor-pointer hover:text-primary-600">Ringkasan</span>
+          <i className="far fa-chevron-right text-[10px] text-neutral-300" />
+          <span className="font-semibold text-neutral-950">Production</span>
         </nav>
-        <span className="om-sep" />
-        <span className="hz-chip hz-chip--clickable">
-          <i className="far fa-map-marker-alt" style={{ marginRight: 7 }} />
+        <span className="h-5.5 w-px bg-neutral-200" />
+        <span className="inline-flex cursor-pointer items-center gap-1 rounded-lg border border-neutral-300 px-3 py-0.5 text-sm text-neutral-600 hover:border-primary-600 hover:text-primary-600">
+          <i className="far fa-map-marker-alt mr-1.75" />
           Semua Site
         </span>
-        <span className="hz-chip hz-chip--clickable">Semua kontraktor</span>
-        <span style={{ flex: 1 }} />
-        <span className="om-datepicker">
-          <i className="far fa-calendar" style={{ color: 'var(--hz-text-tertiary)', fontSize: 13 }} />
-          <input type="text" defaultValue="01–31 Agu 2026" style={{ width: 130 }} />
+        <span className="inline-flex cursor-pointer items-center gap-1 rounded-lg border border-neutral-300 px-3 py-0.5 text-sm text-neutral-600 hover:border-primary-600 hover:text-primary-600">
+          Semua kontraktor
         </span>
+        <span className="flex-1" />
+        <DateRangePicker value={range} onChange={setRange} width={130} />
       </div>
 
-      <div style={{ padding: '20px 24px 26px', display: 'flex', flexDirection: 'column', gap: 16 }}>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 16 }}>
+      <div className="flex flex-col gap-4 px-6 pt-5 pb-6.5">
+        <div className="grid grid-cols-4 gap-4">
           {prodKpis3a.map((k) => (
-            <div className="hz-card" key={k.label}>
-              <div className="hz-card__body" style={{ gap: 0 }}>
-                <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 10 }}>
-                  <span style={{ display: 'flex', flexDirection: 'column', gap: 2, minHeight: 48 }}>
-                    <span className="om-eyebrow">{k.label}</span>
-                    {k.sub && (
-                      <span className="hz-body-s hz-muted" style={{ textTransform: 'none', letterSpacing: 0, width: 139, height: 31 }}>
-                        {k.sub}
-                      </span>
-                    )}
+            <div key={k.label} className="flex flex-col rounded-lg border border-neutral-200 bg-white shadow-md">
+              <div className="flex flex-col gap-0 p-6">
+                <div className="flex items-start justify-between gap-2.5">
+                  <span className="flex min-h-12 flex-col gap-0.5">
+                    <span className="text-[10.5px] font-bold tracking-[.13em] text-neutral-500 uppercase">{k.label}</span>
+                    {k.sub && <span className="h-7.75 w-34.75 text-xs text-neutral-500">{k.sub}</span>}
                   </span>
-                  <span className={k.cls} style={{ flex: 'none' }}>
-                    {k.chip}
-                  </span>
+                  <span className={`flex-none ${k.cls}`}>{k.chip}</span>
                 </div>
-                <div style={{ display: 'flex', alignItems: 'baseline', gap: 7, marginTop: 10 }}>
-                  <span className="om-val" style={{ fontSize: 28, color: k.valColor }}>
+                <div className="mt-2.5 flex items-baseline gap-1.75">
+                  <span className="font-display text-[28px] leading-none font-bold tracking-[-.03em]" style={{ color: k.valColor }}>
                     {k.value}
                   </span>
-                  <span className="hz-body-r hz-muted">{k.unit}</span>
+                  <span className="text-sm text-neutral-500">{k.unit}</span>
                 </div>
-                <div style={{ marginTop: 16 }}>
+                <div className="mt-4">
                   <CategoryBar barPct={k.barW} fillColor={k.legend[0].color} remainderColor="#EEF0F5" legend={k.legend} direction="column" />
                 </div>
               </div>
@@ -64,15 +61,11 @@ export default function Production() {
           ))}
         </div>
 
-        <div className="hz-card">
-          <div className="hz-card__header">
-            <div>
-              <div className="hz-h6" style={{ margin: 0 }}>
-                Achievement per bulan
-              </div>
-            </div>
+        <div className="flex flex-col rounded-lg border border-neutral-200 bg-white shadow-md">
+          <div className="flex items-center justify-between border-b border-neutral-200 p-6">
+            <div className="text-lg font-bold tracking-tight text-neutral-950">Achievement per bulan</div>
           </div>
-          <div className="hz-card__body" style={{ paddingTop: 16 }}>
+          <div className="flex flex-col gap-3 p-6 pt-4">
             {ComboChart && (
               <ComboChart
                 data={prodSeries}
@@ -89,34 +82,34 @@ export default function Production() {
           </div>
         </div>
 
-        <div className="hz-card">
-          <div className="hz-card__header">
-            <div className="hz-h6" style={{ margin: 0 }}>
-              Coal getting by site
-            </div>
+        <div className="flex flex-col rounded-lg border border-neutral-200 bg-white shadow-md">
+          <div className="border-b border-neutral-200 p-6">
+            <div className="text-lg font-bold tracking-tight text-neutral-950">Coal getting by site</div>
           </div>
-          <table className="hz-table" style={{ tableLayout: 'fixed' }}>
+          <table className="w-full border-separate border-spacing-0 text-sm" style={{ tableLayout: 'fixed' }}>
             <thead>
               <tr>
-                <th style={{ width: 130 }}>SITE</th>
-                <th className="is-numeric" style={{ width: 150 }}>
+                <th className="w-32.5 border-b border-neutral-200 bg-neutral-50 px-4 py-3.5 text-left text-xs font-semibold tracking-wide text-neutral-500 uppercase">
+                  SITE
+                </th>
+                <th className="w-37.5 border-b border-neutral-200 bg-neutral-50 px-4 py-3.5 text-right text-xs font-semibold tracking-wide text-neutral-500 uppercase">
                   Actual
                 </th>
-                <th className="is-numeric" style={{ width: 150 }}>
+                <th className="w-37.5 border-b border-neutral-200 bg-neutral-50 px-4 py-3.5 text-right text-xs font-semibold tracking-wide text-neutral-500 uppercase">
                   Target
                 </th>
-                <th>ACHIEVEMENT</th>
+                <th className="border-b border-neutral-200 bg-neutral-50 px-4 py-3.5 text-left text-xs font-semibold tracking-wide text-neutral-500 uppercase">
+                  ACHIEVEMENT
+                </th>
               </tr>
             </thead>
             <tbody>
               {prodRows.map((r) => (
-                <tr key={r.pit}>
-                  <td style={{ fontWeight: 600 }}>{r.pit}</td>
-                  <td className="is-numeric" style={{ fontWeight: 600 }}>
-                    {r.actual}
-                  </td>
-                  <td className="is-numeric hz-muted">{r.plan}</td>
-                  <td>
+                <tr key={r.pit} className="hover:bg-neutral-50">
+                  <td className="border-b border-neutral-200 px-4 py-3.5 font-semibold">{r.pit}</td>
+                  <td className="border-b border-neutral-200 px-4 py-3.5 text-right font-semibold">{r.actual}</td>
+                  <td className="border-b border-neutral-200 px-4 py-3.5 text-right text-neutral-500">{r.plan}</td>
+                  <td className="border-b border-neutral-200 px-4 py-3.5">
                     <AchievementBar barPct={r.bar} label={r.ach} tone={r.tone} />
                   </td>
                 </tr>

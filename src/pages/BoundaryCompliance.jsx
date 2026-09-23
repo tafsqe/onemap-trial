@@ -1,90 +1,60 @@
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import DateRangePicker from '../components/DateRangePicker.jsx'
 import PageShell from '../components/PageShell.jsx'
 import CategoryBar from '../components/CategoryBar.jsx'
 import { LineChart } from '../lib/ds.js'
-import { bcKpis3, bcTrend, bcTrendMonthly, bcCats, bcColors, bcDashed, bcMatrixSites, bcMatrix, pctFmt } from '../data/dummy.js'
+import { BOUNDARY_BASELINE_RANGE, buildBoundaryComplianceData, bcCats, bcColors, bcDashed, bcMatrixSites, pctFmt } from '../data/dummy.js'
 
 export default function BoundaryCompliance() {
   const navigate = useNavigate()
   const [period, setPeriod] = useState('weekly')
+  const [range, setRange] = useState(BOUNDARY_BASELINE_RANGE)
+  const { bcKpis3, bcTrend, bcTrendMonthly, bcMatrix } = useMemo(() => buildBoundaryComplianceData(range), [range])
   const trend = period === 'monthly' ? bcTrendMonthly : bcTrend
   const indexKey = period === 'monthly' ? 'month' : 'week'
 
   return (
     <PageShell active="Peta Boundary">
-      <div className="om-nav">
-        <span className="hz-btn hz-btn--text hz-btn--sm" onClick={() => navigate('/')} style={{ cursor: 'pointer' }}>
+      <div className="flex h-14 items-center gap-3 border-b border-neutral-200 bg-white px-5">
+        <span
+          onClick={() => navigate('/')}
+          className="flex h-8 cursor-pointer items-center gap-2 rounded-lg px-4 text-sm font-bold text-primary-600 hover:bg-primary-50"
+        >
           <i className="far fa-arrow-left" />
           Ringkasan
         </span>
-        <span className="om-sep" />
-        <span style={{ fontWeight: 700, fontSize: 14 }}>Boundary Compliance</span>
-        <span style={{ flex: 1 }} />
-        <span className="om-datepicker">
-          <i className="far fa-calendar" style={{ color: 'var(--hz-text-tertiary)', fontSize: 13 }} />
-          <input type="text" defaultValue="15 Agu – 14 Sep 2026" style={{ width: 150 }} />
-        </span>
+        <span className="h-5.5 w-px bg-neutral-200" />
+        <span className="text-sm font-bold text-neutral-950">Boundary Compliance</span>
+        <span className="flex-1" />
+        <DateRangePicker value={range} onChange={setRange} />
       </div>
 
-      <div style={{ padding: '22px 24px 26px', display: 'flex', flexDirection: 'column', gap: 16 }}>
-        <div style={{ display: 'grid', gridTemplateColumns: '280px 1fr', gap: 16, alignItems: 'stretch' }}>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+      <div className="flex flex-col gap-4 px-6 pt-5.5 pb-6.5">
+        <div className="grid grid-cols-[280px_1fr] items-stretch gap-4">
+          <div className="flex flex-col gap-4">
             {bcKpis3.map((k) => (
-              <div className="hz-card" key={k.label}>
-                <div className="hz-card__body" style={{ gap: 0 }}>
-                  <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 10 }}>
-                    <span className="om-eyebrow">{k.label}</span>
+              <div key={k.label} className="flex flex-col rounded-lg border border-neutral-200 bg-white shadow-md">
+                <div className="flex flex-col gap-0 p-6">
+                  <div className="flex items-start justify-between gap-2.5">
+                    <span className="text-[10.5px] font-bold tracking-[.13em] text-neutral-500 uppercase">{k.label}</span>
                     {k.chip && (
                       <span
-                        style={{
-                          display: 'inline-flex',
-                          alignItems: 'center',
-                          gap: 5,
-                          padding: '3px 8px',
-                          borderRadius: 999,
-                          background: k.gapBg,
-                          color: k.gapColor,
-                          fontSize: 12,
-                          fontWeight: 700,
-                          whiteSpace: 'nowrap',
-                          flex: 'none',
-                        }}
+                        className="inline-flex flex-none items-center gap-1.25 rounded-full px-2 py-0.75 text-xs font-bold whitespace-nowrap"
+                        style={{ background: k.gapBg, color: k.gapColor }}
                       >
-                        <i className={`far ${k.gapIcon}`} style={{ fontSize: 10.5 }} />
+                        <i className={`far ${k.gapIcon} text-[10.5px]`} />
                         {k.chip}
                       </span>
                     )}
                   </div>
-                  <div style={{ display: 'flex', alignItems: 'baseline', gap: 7, marginTop: 10 }}>
-                    <span className="om-val" style={{ fontSize: 34 }}>
-                      {k.value}
-                    </span>
-                    <span className="hz-body-r hz-muted">{k.unit}</span>
+                  <div className="mt-2.5 flex items-baseline gap-1.75">
+                    <span className="font-display text-[34px] leading-none font-bold tracking-[-.03em] text-neutral-950">{k.value}</span>
+                    <span className="text-sm text-neutral-500">{k.unit}</span>
                   </div>
                   {k.showBar && (
-                    <div style={{ marginTop: 16 }}>
+                    <div className="mt-4">
                       <CategoryBar barPct={k.barW} fillColor={k.legend[0].color} remainderColor="#EEF0F5" legend={k.legend} />
-                    </div>
-                  )}
-                  {!k.showBar && (
-                    <div style={{ marginTop: 16, display: 'flex', flexDirection: 'column', gap: 6, fontSize: 12, color: 'var(--hz-text-secondary)' }}>
-                      {k.legend.map((l) => (
-                        <span key={l.text}>
-                          <span
-                            style={{
-                              display: 'inline-block',
-                              width: 8,
-                              height: 8,
-                              borderRadius: 2,
-                              marginRight: 6,
-                              verticalAlign: 'middle',
-                              background: l.color,
-                            }}
-                          />
-                          {l.text}
-                        </span>
-                      ))}
                     </div>
                   )}
                 </div>
@@ -92,23 +62,29 @@ export default function BoundaryCompliance() {
             ))}
           </div>
 
-          <div className="hz-card">
-            <div className="hz-card__header">
-              <div>
-                <div className="hz-h6" style={{ margin: 0 }}>
-                  Compliance trend
-                </div>
-              </div>
-              <nav className="hz-tabs--pill">
-                <button onClick={() => setPeriod('weekly')} className={period === 'weekly' ? 'hz-tab--pill is-active' : 'hz-tab--pill'}>
+          <div className="flex flex-col rounded-lg border border-neutral-200 bg-white shadow-md">
+            <div className="flex items-center justify-between border-b border-neutral-200 p-6">
+              <div className="text-lg font-bold tracking-tight text-neutral-950">Compliance trend</div>
+              <nav className="inline-flex gap-0.5 rounded-md bg-neutral-100 p-[3px]">
+                <button
+                  onClick={() => setPeriod('weekly')}
+                  className={`rounded px-3.5 py-2 text-sm font-semibold transition-colors ${
+                    period === 'weekly' ? 'bg-white text-neutral-950 shadow-sm' : 'text-neutral-500 hover:text-neutral-950'
+                  }`}
+                >
                   Mingguan
                 </button>
-                <button onClick={() => setPeriod('monthly')} className={period === 'monthly' ? 'hz-tab--pill is-active' : 'hz-tab--pill'}>
+                <button
+                  onClick={() => setPeriod('monthly')}
+                  className={`rounded px-3.5 py-2 text-sm font-semibold transition-colors ${
+                    period === 'monthly' ? 'bg-white text-neutral-950 shadow-sm' : 'text-neutral-500 hover:text-neutral-950'
+                  }`}
+                >
                   Bulanan
                 </button>
               </nav>
             </div>
-            <div className="hz-card__body" style={{ paddingTop: 16 }}>
+            <div className="flex flex-col gap-3 p-6 pt-4">
               {LineChart && (
                 <LineChart
                   data={trend}
@@ -130,27 +106,32 @@ export default function BoundaryCompliance() {
           </div>
         </div>
 
-        <div className="hz-card">
-          <div className="hz-card__header">
-            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-              <i className="fas fa-map-marker-alt" style={{ fontSize: 16, color: 'var(--hz-text-primary)' }} />
-              <div className="hz-h6" style={{ margin: 0 }}>
-                Outside Boundary by Site
-              </div>
+        <div className="flex flex-col rounded-lg border border-neutral-200 bg-white shadow-md">
+          <div className="flex items-center justify-between border-b border-neutral-200 p-6">
+            <div className="flex items-center gap-2.5">
+              <i className="fas fa-map-marker-alt text-base text-neutral-950" />
+              <div className="text-lg font-bold tracking-tight text-neutral-950">Outside Boundary by Site</div>
             </div>
-            <span className="hz-body-s hz-muted">Semua angka dalam Ha</span>
+            <span className="text-xs text-neutral-500">Semua angka dalam Ha</span>
           </div>
-          <div style={{ overflowX: 'auto' }}>
-            <table className="hz-table" style={{ minWidth: 1000, tableLayout: 'fixed' }}>
+          <div className="overflow-x-auto">
+            <table className="w-full border-separate border-spacing-0 text-sm" style={{ minWidth: 1000, tableLayout: 'fixed' }}>
               <thead>
                 <tr>
-                  <th style={{ width: 150, whiteSpace: 'nowrap' }}>Regulation</th>
-                  <th className="is-numeric" style={{ width: 130, whiteSpace: 'nowrap' }}>
+                  <th className="w-[150px] border-b border-neutral-200 bg-neutral-50 px-4 py-3.5 text-left text-xs font-semibold tracking-wide text-neutral-500 whitespace-nowrap uppercase">
+                    Regulation
+                  </th>
+                  <th className="w-[130px] border-b border-neutral-200 bg-neutral-50 px-4 py-3.5 text-right text-xs font-semibold tracking-wide text-neutral-500 whitespace-nowrap uppercase">
                     Total Outside
                   </th>
-                  <th style={{ width: 130, whiteSpace: 'nowrap' }}>Status</th>
+                  <th className="w-[130px] border-b border-neutral-200 bg-neutral-50 px-4 py-3.5 text-left text-xs font-semibold tracking-wide text-neutral-500 whitespace-nowrap uppercase">
+                    Status
+                  </th>
                   {bcMatrixSites.map((site) => (
-                    <th key={site} style={{ textAlign: 'center', width: 88, whiteSpace: 'nowrap' }}>
+                    <th
+                      key={site}
+                      className="w-22 border-b border-neutral-200 bg-neutral-50 px-4 py-3.5 text-center text-xs font-semibold tracking-wide text-neutral-500 whitespace-nowrap uppercase"
+                    >
                       {site}
                     </th>
                   ))}
@@ -158,34 +139,40 @@ export default function BoundaryCompliance() {
               </thead>
               <tbody>
                 {bcMatrix.map((row) => (
-                  <tr key={row.label} style={{ borderTop: '1px solid #fff' }}>
-                    <td style={{ fontWeight: 700, padding: '8px 12px' }}>
-                      <span style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}>
-                        <i className={`far ${row.icon}`} style={{ color: 'var(--hz-text-secondary)', width: 15, textAlign: 'center' }} />
+                  <tr key={row.label} className="border-t border-white hover:bg-neutral-50">
+                    <td className="border-b border-neutral-200 px-3 py-2 font-bold">
+                      <span className="inline-flex items-center gap-2">
+                        <i className={`far ${row.icon} w-3.75 text-center text-neutral-700`} />
                         {row.label}
                       </span>
                     </td>
-                    <td className="is-numeric" style={{ fontWeight: 700, padding: '8px 12px' }}>
-                      {row.total}
-                    </td>
-                    <td style={{ padding: '8px 12px' }}>
+                    <td className="border-b border-neutral-200 px-3 py-2 text-right font-bold">{row.total}</td>
+                    <td className="border-b border-neutral-200 px-3 py-2">
                       <span className={row.statusCls}>
-                        <i className={`far ${row.statusIcon}`} style={{ marginRight: 6 }} />
+                        <i className={`far ${row.statusIcon} mr-1.5`} />
                         {row.statusTxt}
                       </span>
                     </td>
                     {row.allSites ? (
-                      <td colSpan={6} style={{ textAlign: 'center', background: row.allSitesCell.bg, padding: '8px 6px', whiteSpace: 'nowrap', borderLeft: '1px solid #fff' }}>
-                        <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6, color: row.allSitesCell.fg, fontWeight: 700, fontSize: 12.5 }}>
-                          <i className={`far ${row.allSitesCell.icon}`} style={{ fontSize: 12 }} />
+                      <td
+                        colSpan={6}
+                        className="border-b border-l border-neutral-200 px-1.5 py-2 text-center whitespace-nowrap"
+                        style={{ background: row.allSitesCell.bg, borderLeftColor: '#fff' }}
+                      >
+                        <span className="inline-flex items-center gap-1.5 text-[12.5px] font-bold" style={{ color: row.allSitesCell.fg }}>
+                          <i className={`far ${row.allSitesCell.icon} text-xs`} />
                           {row.allSitesCell.val}
                         </span>
                       </td>
                     ) : (
                       row.cells.map((cell, i) => (
-                        <td key={i} style={{ textAlign: 'center', background: cell.bg, padding: '8px 6px', whiteSpace: 'nowrap', borderLeft: '1px solid #fff' }}>
-                          <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6, color: cell.fg, fontWeight: 700, fontSize: 12.5 }}>
-                            <i className={`far ${cell.icon}`} style={{ fontSize: 12 }} />
+                        <td
+                          key={i}
+                          className="border-b border-l border-neutral-200 px-1.5 py-2 text-center whitespace-nowrap"
+                          style={{ background: cell.bg, borderLeftColor: '#fff' }}
+                        >
+                          <span className="inline-flex items-center gap-1.5 text-[12.5px] font-bold" style={{ color: cell.fg }}>
+                            <i className={`far ${cell.icon} text-xs`} />
                             {cell.val}
                           </span>
                         </td>

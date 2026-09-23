@@ -1,3 +1,126 @@
+@import 'tailwindcss';
+
+/* Tailwind theme — mirrors the SQE Suite tokens (design-system/tokens.css) so
+   Tailwind utilities (bg-primary-600, text-neutral-700, font-display, …) land
+   on the exact hex values from the mockup instead of Tailwind's stock palette. */
+@theme {
+  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  --font-display: 'IBM Plex Sans', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+
+  /* Primary — SQE Suite azure theme */
+  --color-primary-50: #E3F7FF;
+  --color-primary-100: #88D5F3;
+  --color-primary-200: #80C0FD;
+  --color-primary-300: #8DA6FF;
+  --color-primary-400: #389EFF;
+  --color-primary-500: #0F76F1;
+  --color-primary-600: #0F47E0;
+  --color-primary-700: #1437BF;
+  --color-primary-800: #15289F;
+  --color-primary-900: #121A80;
+  --color-primary-950: #050947;
+
+  /* Neutral — replaces Tailwind's default gray/neutral ramp */
+  --color-neutral-0: #FFFFFF;
+  --color-neutral-50: #F9FAFC;
+  --color-neutral-100: #EDF0F5;
+  --color-neutral-200: #D5DBE5;
+  --color-neutral-300: #BAC3D1;
+  --color-neutral-400: #A4AEBD;
+  --color-neutral-500: #8490A1;
+  --color-neutral-600: #677485;
+  --color-neutral-700: #505D6E;
+  --color-neutral-800: #3B4552;
+  --color-neutral-900: #29313B;
+  --color-neutral-950: #1E252E;
+  --color-neutral-1000: #13171C;
+
+  /* Status + chart colors */
+  --color-blue-50: #E6F0FD;
+  --color-blue-100: #C2DCFA;
+  --color-blue-200: #91C0F6;
+  --color-blue-300: #5AA0F2;
+  --color-blue-400: #2E86EF;
+  --color-blue-500: #006CEB;
+  --color-blue-600: #005CC8;
+  --color-blue-700: #004DA7;
+  --color-blue-800: #003E86;
+  --color-blue-900: #00316A;
+  --color-blue-950: #00234D;
+
+  --color-green-50: #CBF5E6;
+  --color-green-100: #8AE5C5;
+  --color-green-200: #42DBA6;
+  --color-green-300: #21C48B;
+  --color-green-400: #1AB07C;
+  --color-green-500: #159367;
+  --color-green-600: #107853;
+  --color-green-700: #0F6B4B;
+  --color-green-800: #0C573D;
+  --color-green-900: #154232;
+  --color-green-950: #0F2E23;
+
+  --color-red-50: #FFD9D9;
+  --color-red-100: #FAA6A6;
+  --color-red-200: #F57878;
+  --color-red-300: #EC5151;
+  --color-red-400: #E53535;
+  --color-red-500: #D92222;
+  --color-red-600: #BA1313;
+  --color-red-700: #940D0D;
+  --color-red-800: #6F0707;
+  --color-red-900: #4A0404;
+  --color-red-950: #260202;
+
+  --color-yellow-50: #FFFEDE;
+  --color-yellow-100: #FCE397;
+  --color-yellow-200: #FFD966;
+  --color-yellow-300: #FFCC33;
+  --color-yellow-400: #FFBF00;
+  --color-yellow-500: #E5AC00;
+  --color-yellow-600: #CC9900;
+  --color-yellow-700: #B28600;
+  --color-yellow-800: #997300;
+  --color-yellow-900: #664C00;
+  --color-yellow-950: #332600;
+
+  --color-orange-50: #FFD9CC;
+  --color-orange-100: #FEB69C;
+  --color-orange-200: #FC976E;
+  --color-orange-300: #F87E49;
+  --color-orange-400: #F16A2C;
+  --color-orange-500: #E45A18;
+  --color-orange-600: #C3470A;
+  --color-orange-700: #9B3705;
+  --color-orange-800: #732802;
+  --color-orange-900: #4D1A01;
+  --color-orange-950: #260D00;
+
+  --color-teal-50: #DBF3FF;
+  --color-teal-100: #AEE4FE;
+  --color-teal-200: #82D3FC;
+  --color-teal-300: #62C7F8;
+  --color-teal-400: #3FB6F1;
+  --color-teal-500: #2CA7E4;
+  --color-teal-600: #1C8CC3;
+  --color-teal-700: #146E9B;
+  --color-teal-800: #0D5173;
+  --color-teal-900: #08364D;
+  --color-teal-950: #041B26;
+
+  --color-purple-50: #E5D9FF;
+  --color-purple-100: #D0B9FE;
+  --color-purple-200: #B795FC;
+  --color-purple-300: #A277F8;
+  --color-purple-400: #9160F1;
+  --color-purple-500: #7C48E4;
+  --color-purple-600: #6536C3;
+  --color-purple-700: #4F299B;
+  --color-purple-800: #3A1D73;
+  --color-purple-900: #26134D;
+  --color-purple-950: #130926;
+}
+
 :root {
   color-scheme: light;
 }
@@ -10,82 +133,16 @@ body,
 
 body {
   margin: 0;
-  background: #eceff4;
-  font-family: 'Inter', system-ui, sans-serif;
-  color: var(--hz-text-primary);
+  background: var(--color-neutral-50);
+  color: var(--color-neutral-950);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
 }
 
 a {
-  color: var(--hz-horizon-primary);
+  color: var(--color-primary-600);
   text-decoration: none;
 }
 a:hover {
-  color: var(--hz-horizon-primary-dark);
-}
-
-.om-nav {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  height: 56px;
-  padding: 0 20px;
-  background: var(--hz-surface-card);
-  border-bottom: 1px solid var(--hz-border-subtle);
-  flex: none;
-}
-.om-sep {
-  width: 1px;
-  height: 22px;
-  background: var(--hz-border-subtle);
-}
-.om-eyebrow {
-  font-size: 10.5px;
-  letter-spacing: 0.13em;
-  text-transform: uppercase;
-  color: var(--hz-text-tertiary);
-  font-weight: 700;
-}
-.om-val {
-  font-family: 'IBM Plex Sans', Inter, sans-serif;
-  font-weight: 700;
-  letter-spacing: -0.03em;
-  color: var(--hz-text-primary);
-}
-.om-fact:last-child {
-  border-bottom: none !important;
-}
-
-.om-shell {
-  position: relative;
-  padding-left: 268px;
-  background: var(--hz-surface-page);
-  display: flex;
-  flex-direction: column;
-  min-height: 100vh;
-}
-.om-sidebar-slot {
-  position: absolute;
-  left: 0;
-  top: 0;
-  bottom: 0;
-  width: 268px;
-  z-index: 1200;
-  display: flex;
-}
-.om-datepicker {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  padding: 7px 12px;
-  border: 1px solid var(--hz-border-default);
-  border-radius: 8px;
-  background: #fff;
-}
-.om-datepicker input {
-  border: none;
-  outline: none;
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--hz-text-primary);
-  background: transparent;
+  color: var(--color-primary-800);
 }

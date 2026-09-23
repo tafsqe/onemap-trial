@@ -1,38 +1,46 @@
+import { useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import DateRangePicker from '../components/DateRangePicker.jsx'
 import PageShell from '../components/PageShell.jsx'
 import CategoryBar from '../components/CategoryBar.jsx'
 import AchievementBar from '../components/AchievementBar.jsx'
 import { LineChart } from '../lib/ds.js'
-import { obKpis4b, obSeries, obCats, obColors, obVolSeries, obVolCats, obVolColors, obDistRows, obVolRows, pctFmt } from '../data/dummy.js'
+import { OB_BASELINE_RANGE, buildObDistanceData, obCats, obColors, obVolCats, obVolColors, pctFmt } from '../data/dummy.js'
 
 function SiteTable({ title, rows }) {
   return (
-    <div className="hz-card" style={{ minWidth: 0 }}>
-      <div className="hz-card__header">
-        <div className="hz-h6" style={{ margin: 0 }}>
+    <div className="flex min-w-0 flex-col rounded-lg border border-neutral-200 bg-white shadow-md">
+      <div className="border-b border-neutral-200 p-6">
+        <div className="text-lg font-bold tracking-tight text-neutral-950">
           {title}
-          <div className="hz-body-s hz-muted" style={{ marginTop: 4, fontWeight: 400, textTransform: 'none', letterSpacing: 0 }}>
-            Rata-rata bulanan seluruh site
-          </div>
+          <div className="mt-1 text-xs font-normal text-neutral-500">Rata-rata bulanan seluruh site</div>
         </div>
       </div>
-      <div style={{ overflowX: 'auto' }}>
-        <table className="hz-table">
+      <div className="overflow-x-auto">
+        <table className="w-full border-separate border-spacing-0 text-sm">
           <thead>
             <tr>
-              <th>Site Area</th>
-              <th className="is-numeric">Actual</th>
-              <th className="is-numeric">TARGET</th>
-              <th style={{ width: 190 }}>ACHIEVEMENT</th>
+              <th className="border-b border-neutral-200 bg-neutral-50 px-4 py-3.5 text-left text-xs font-semibold tracking-wide text-neutral-500 uppercase">
+                Site Area
+              </th>
+              <th className="border-b border-neutral-200 bg-neutral-50 px-4 py-3.5 text-right text-xs font-semibold tracking-wide text-neutral-500 uppercase">
+                Actual
+              </th>
+              <th className="border-b border-neutral-200 bg-neutral-50 px-4 py-3.5 text-right text-xs font-semibold tracking-wide text-neutral-500 uppercase">
+                TARGET
+              </th>
+              <th className="w-47.5 border-b border-neutral-200 bg-neutral-50 px-4 py-3.5 text-left text-xs font-semibold tracking-wide text-neutral-500 uppercase">
+                ACHIEVEMENT
+              </th>
             </tr>
           </thead>
           <tbody>
             {rows.map((r) => (
-              <tr key={r.site}>
-                <td style={{ fontWeight: 700 }}>{r.site}</td>
-                <td className="is-numeric">{r.actual}</td>
-                <td className="is-numeric hz-muted">{r.plan}</td>
-                <td>
+              <tr key={r.site} className="hover:bg-neutral-50">
+                <td className="border-b border-neutral-200 px-4 py-3.5 font-bold">{r.site}</td>
+                <td className="border-b border-neutral-200 px-4 py-3.5 text-right">{r.actual}</td>
+                <td className="border-b border-neutral-200 px-4 py-3.5 text-right text-neutral-500">{r.plan}</td>
+                <td className="border-b border-neutral-200 px-4 py-3.5">
                   <AchievementBar barPct={r.bar} label={r.ach} tone={r.tone} barHeight={10} labelFirst labelWidth={38} />
                 </td>
               </tr>
@@ -46,40 +54,36 @@ function SiteTable({ title, rows }) {
 
 export default function ObDistance() {
   const navigate = useNavigate()
+  const [range, setRange] = useState(OB_BASELINE_RANGE)
+  const { obKpis4b, obSeries, obVolSeries, obDistRows, obVolRows } = useMemo(() => buildObDistanceData(range), [range])
 
   return (
     <PageShell active="Peta">
-      <div className="om-nav">
-        <span className="hz-btn hz-btn--text hz-btn--sm" onClick={() => navigate('/')} style={{ cursor: 'pointer' }}>
+      <div className="flex h-14 items-center gap-3 border-b border-neutral-200 bg-white px-5">
+        <span
+          onClick={() => navigate('/')}
+          className="flex h-8 cursor-pointer items-center gap-2 rounded-lg px-4 text-sm font-bold text-primary-600 hover:bg-primary-50"
+        >
           <i className="far fa-arrow-left" />
           Ringkasan
         </span>
-        <span className="om-sep" />
-        <span style={{ fontWeight: 700, fontSize: 14 }}>OB Distance</span>
-        <span style={{ flex: 1 }} />
-        <span className="om-datepicker">
-          <i className="far fa-calendar" style={{ color: 'var(--hz-text-tertiary)', fontSize: 13 }} />
-          <input type="text" defaultValue="02–09 Sep 2026" style={{ width: 140 }} />
-        </span>
+        <span className="h-5.5 w-px bg-neutral-200" />
+        <span className="text-sm font-bold text-neutral-950">OB Distance</span>
+        <span className="flex-1" />
+        <DateRangePicker value={range} onChange={setRange} width={140} />
       </div>
 
-      <div style={{ padding: '22px 24px 26px', display: 'flex', flexDirection: 'column', gap: 16 }}>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2,1fr)', gap: 16 }}>
+      <div className="flex flex-col gap-4 px-6 pt-5.5 pb-6.5">
+        <div className="grid grid-cols-2 gap-4">
           {obKpis4b.map((k) => (
-            <div className="hz-card" key={k.label}>
-              <div className="hz-card__body" style={{ gap: 0 }}>
-                <span className="om-eyebrow" style={{ minHeight: 24, fontSize: 10.5 }}>
-                  {k.label}
-                </span>
-                <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: 10, marginTop: 10 }}>
-                  <span className="om-val" style={{ fontSize: 28 }}>
-                    {k.value}
-                  </span>
-                  <span className="om-val" style={{ fontSize: 28, flex: 'none' }}>
-                    {k.pct}
-                  </span>
+            <div key={k.label} className="flex flex-col rounded-lg border border-neutral-200 bg-white shadow-md">
+              <div className="flex flex-col gap-0 p-6">
+                <span className="min-h-6 text-[10.5px] font-bold tracking-[.13em] text-neutral-500 uppercase">{k.label}</span>
+                <div className="mt-2.5 flex items-baseline justify-between gap-2.5">
+                  <span className="font-display text-[28px] leading-none font-bold tracking-[-.03em] text-neutral-950">{k.value}</span>
+                  <span className="font-display flex-none text-[28px] leading-none font-bold tracking-[-.03em] text-neutral-950">{k.pct}</span>
                 </div>
-                <div style={{ marginTop: 16 }}>
+                <div className="mt-4">
                   <CategoryBar barPct={k.barW} fillColor={k.legend[0].color} remainderColor="#EEF0F5" legend={k.legend} />
                 </div>
               </div>
@@ -87,42 +91,56 @@ export default function ObDistance() {
           ))}
         </div>
 
-        <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0,1fr) minmax(0,1fr)', gap: 16 }}>
-          <div className="hz-card">
-            <div className="hz-card__header">
-              <div>
-                <div className="hz-h6" style={{ margin: 0 }}>
-                  OB Distance Achievement Trend
-                </div>
-                <div className="hz-body-s hz-muted" style={{ marginTop: 4 }}>
-                  Rata-rata bulanan seluruh site
-                </div>
-              </div>
+        <div className="grid grid-cols-2 gap-4">
+          <div className="flex flex-col rounded-lg border border-neutral-200 bg-white shadow-md">
+            <div className="border-b border-neutral-200 p-6">
+              <div className="text-lg font-bold tracking-tight text-neutral-950">OB Distance Achievement Trend</div>
+              <div className="mt-1 text-xs text-neutral-500">Rata-rata bulanan seluruh site</div>
             </div>
-            <div className="hz-card__body" style={{ paddingTop: 16 }}>
+            <div className="flex flex-col gap-3 p-6 pt-4">
               {LineChart && (
-                <LineChart data={obSeries} index="day" categories={obCats} colors={obColors} type="line" fill="none" strokeWidth={2.5} valueFormatter={pctFmt} height={252} minValue={60} maxValue={100} showDots />
+                <LineChart
+                  data={obSeries}
+                  index="day"
+                  categories={obCats}
+                  colors={obColors}
+                  type="line"
+                  fill="none"
+                  strokeWidth={2.5}
+                  valueFormatter={pctFmt}
+                  height={252}
+                  minValue={60}
+                  maxValue={100}
+                  showDots
+                />
               )}
             </div>
           </div>
           <SiteTable title="OB Distance Achievement Trend" rows={obDistRows} />
         </div>
 
-        <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0,1fr) minmax(0,1fr)', gap: 16 }}>
-          <div className="hz-card">
-            <div className="hz-card__header">
-              <div>
-                <div className="hz-h6" style={{ margin: 0 }}>
-                  OB Volume Achievement Trend
-                </div>
-                <div className="hz-body-s hz-muted" style={{ marginTop: 4 }}>
-                  Rata-rata bulanan seluruh site
-                </div>
-              </div>
+        <div className="grid grid-cols-2 gap-4">
+          <div className="flex flex-col rounded-lg border border-neutral-200 bg-white shadow-md">
+            <div className="border-b border-neutral-200 p-6">
+              <div className="text-lg font-bold tracking-tight text-neutral-950">OB Volume Achievement Trend</div>
+              <div className="mt-1 text-xs text-neutral-500">Rata-rata bulanan seluruh site</div>
             </div>
-            <div className="hz-card__body" style={{ paddingTop: 16 }}>
+            <div className="flex flex-col gap-3 p-6 pt-4">
               {LineChart && (
-                <LineChart data={obVolSeries} index="day" categories={obVolCats} colors={obVolColors} type="line" fill="none" strokeWidth={2.5} valueFormatter={pctFmt} height={252} minValue={0} maxValue={40} showDots />
+                <LineChart
+                  data={obVolSeries}
+                  index="day"
+                  categories={obVolCats}
+                  colors={obVolColors}
+                  type="line"
+                  fill="none"
+                  strokeWidth={2.5}
+                  valueFormatter={pctFmt}
+                  height={252}
+                  minValue={0}
+                  maxValue={40}
+                  showDots
+                />
               )}
             </div>
           </div>

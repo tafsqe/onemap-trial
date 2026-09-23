@@ -1,14 +1,18 @@
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import DashboardTabs from '../components/DashboardTabs.jsx'
+import DateRangePicker from '../components/DateRangePicker.jsx'
 import PageShell from '../components/PageShell.jsx'
 import CategoryBar from '../components/CategoryBar.jsx'
 import GapChip from '../components/GapChip.jsx'
 import { MineMap } from '../lib/ds.js'
-import { readyCards, pendingCards, boundary, mapRoutes, mapMarkers, mapCenter, mapZoom, mapFlushStyle, basemap } from '../data/dummy.js'
+import { OVERVIEW_BASELINE_RANGE, buildReadyCards, pendingCards, boundary, mapRoutes, mapMarkers, mapCenter, mapZoom, mapFlushStyle, basemap } from '../data/dummy.js'
 
 export default function Overview() {
   const navigate = useNavigate()
   const [expanded, setExpanded] = useState({})
+  const [range, setRange] = useState(OVERVIEW_BASELINE_RANGE)
+  const readyCards = useMemo(() => buildReadyCards(range), [range])
 
   const toggleFacts = (e, id) => {
     e.stopPropagation()
@@ -17,103 +21,79 @@ export default function Overview() {
 
   return (
     <PageShell active="Dashboard">
-      <div className="om-nav">
-        <nav className="hz-breadcrumb">
-          <span className="hz-breadcrumb__item">Operasi</span>
-          <i className="far fa-chevron-right hz-breadcrumb__sep" />
-          <span className="hz-breadcrumb__item is-current">Ringkasan</span>
-        </nav>
-        <span style={{ flex: 1 }} />
-        <span className="om-datepicker">
-          <i className="far fa-calendar" style={{ color: 'var(--hz-text-tertiary)', fontSize: 13 }} />
-          <input type="text" defaultValue="15 Agu – 14 Sep 2026" style={{ width: 150 }} />
-        </span>
+      <div className="border-b border-neutral-200 bg-white">
+        <div className="flex h-14 items-center gap-3 px-5">
+          <span className="text-base font-bold text-neutral-950">Dashboard</span>
+          <span className="flex-1" />
+          <DateRangePicker value={range} onChange={setRange} />
+        </div>
+        <DashboardTabs />
       </div>
 
-      <div style={{ padding: 24, display: 'flex', flexDirection: 'column', gap: 18 }}>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 16 }}>
+      <div className="flex flex-col gap-4.5 p-6">
+        <div className="grid grid-cols-3 gap-4">
           {readyCards.map((c) => {
             const factsOpen = !!expanded[c.id]
             return (
               <div
                 key={c.id}
-                className="hz-card"
                 onClick={() => navigate(c.target)}
-                style={{ cursor: 'pointer', display: 'flex', flexDirection: 'column' }}
+                className="group flex cursor-pointer flex-col rounded-lg border border-neutral-200 bg-white shadow-md transition-shadow hover:shadow-lg hover:border-neutral-300"
               >
-                <div className="hz-card__body" style={{ gap: 0, padding: '24px 24px 20px', display: 'flex', flexDirection: 'column', flex: 1 }}>
-                  <div style={{ display: 'flex', alignItems: 'flex-start', gap: 14, minHeight: 44 }}>
+                <div className="flex flex-1 flex-col p-6 pb-5">
+                  <div className="flex min-h-11 items-start gap-3.5">
                     <span
-                      style={{
-                        width: 44,
-                        height: 44,
-                        borderRadius: 12,
-                        background: c.iconBg,
-                        color: c.iconColor,
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        flex: 'none',
-                      }}
+                      className="flex h-11 w-11 flex-none items-center justify-center rounded-xl"
+                      style={{ background: c.iconBg, color: c.iconColor }}
                     >
-                      <i className={`far ${c.icon}`} style={{ fontSize: 19 }} />
+                      <i className={`far ${c.icon} text-[19px]`} />
                     </span>
-                    <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', gap: 3, height: 44, justifyContent: 'center', overflow: 'hidden' }}>
-                      <div style={{ fontWeight: 700, fontSize: 17, letterSpacing: '-.015em', color: 'var(--hz-text-primary)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                    <div className="flex h-11 min-w-0 flex-1 flex-col justify-center gap-0.75 overflow-hidden">
+                      <div className="overflow-hidden text-[17px] font-bold text-ellipsis whitespace-nowrap tracking-[-.015em] text-neutral-950">
                         {c.label}
                       </div>
-                      <div className="hz-body-s hz-muted" style={{ textTransform: 'none', letterSpacing: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                        {c.idn}
-                      </div>
+                      <div className="overflow-hidden text-xs text-ellipsis whitespace-nowrap text-neutral-500">{c.idn}</div>
                     </div>
-                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 6, flex: 'none', height: 44, justifyContent: 'center' }}>
-                      <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5, fontSize: 12, fontWeight: 700, color: 'var(--hz-horizon-primary)', whiteSpace: 'nowrap', cursor: 'pointer' }}>
+                    <div className="flex h-11 flex-none flex-col items-end justify-center gap-1.5">
+                      <span className="inline-flex cursor-pointer items-center gap-1 text-xs font-bold whitespace-nowrap text-primary-600 group-hover:underline">
                         Lihat detail
-                        <i className="far fa-arrow-right" style={{ fontSize: 10 }} />
+                        <i className="far fa-arrow-right text-[10px]" />
                       </span>
                     </div>
                   </div>
 
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16, marginTop: 22 }}>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-                      <span className="om-val" style={{ fontSize: 44, lineHeight: 1 }}>
-                        {c.value}
-                      </span>
-                      <span className="hz-body-s hz-muted" style={{ whiteSpace: 'nowrap' }}>
-                        {c.unit}
-                      </span>
+                  <div className="mt-5.5 flex items-center justify-between gap-4">
+                    <div className="flex flex-col gap-1">
+                      <span className="font-display text-[44px] leading-none font-bold tracking-[-.03em] text-neutral-950">{c.value}</span>
+                      <span className="text-xs whitespace-nowrap text-neutral-500">{c.unit}</span>
                     </div>
-                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 8 }}>
-                      <span className="hz-body-s" style={{ color: 'var(--hz-text-secondary)', whiteSpace: 'nowrap' }}>
-                        {c.targetLabel}: <b style={{ color: 'var(--hz-text-primary)' }}>{c.targetVal}</b>
+                    <div className="flex flex-col items-end gap-2">
+                      <span className="text-xs whitespace-nowrap text-neutral-700">
+                        {c.targetLabel}: <b className="text-neutral-950">{c.targetVal}</b>
                       </span>
                       <GapChip icon={c.gapIcon} text={c.gapTxt} color={c.gapColor} bg={c.gapBg} />
                     </div>
                   </div>
 
-                  <div style={{ marginTop: 20 }}>
+                  <div className="mt-5">
                     <CategoryBar barPct={`${c.catValues[0]}%`} fillColor={c.catLabels[0].color} remainderColor={c.remainderColor} legend={c.catLabels} />
                   </div>
 
-                  <div style={{ marginTop: 20, borderRadius: 10, background: 'var(--hz-neutral-50)', border: '1px solid var(--hz-border-subtle)', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+                  <div className="mt-5 flex flex-col overflow-hidden rounded-[10px] border border-neutral-200 bg-neutral-50">
                     <div
                       onClick={(e) => toggleFacts(e, c.id)}
-                      style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, padding: '11px 14px', cursor: 'pointer' }}
+                      className="flex cursor-pointer items-center justify-between gap-3 px-3.5 py-2.75 transition-colors hover:bg-neutral-100"
                     >
-                      <span style={{ fontSize: 12, fontWeight: 700, color: 'var(--hz-text-secondary)' }}>Rincian</span>
-                      <i className={`far ${factsOpen ? 'fa-chevron-up' : 'fa-chevron-down'}`} style={{ fontSize: 12, color: 'var(--hz-text-tertiary)' }} />
+                      <span className="text-xs font-bold text-neutral-700">Rincian</span>
+                      <i className={`far ${factsOpen ? 'fa-chevron-up' : 'fa-chevron-down'} text-xs text-neutral-500`} />
                     </div>
                     {factsOpen &&
                       c.facts.map((ft, i) => (
-                        <div
-                          key={i}
-                          className="om-fact"
-                          style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: 12, padding: '11px 14px', borderTop: '1px solid var(--hz-border-subtle)' }}
-                        >
-                          <span style={{ fontSize: 12.5, fontWeight: 600, color: 'var(--hz-text-secondary)' }}>{ft.label}</span>
-                          <span style={{ display: 'flex', alignItems: 'baseline', gap: 7, textAlign: 'right' }}>
-                            <span style={{ fontSize: 13.5, fontWeight: 700, color: 'var(--hz-text-primary)' }}>{ft.value}</span>
-                            <span style={{ fontSize: 11.5, color: 'var(--hz-text-tertiary)' }}>{ft.note}</span>
+                        <div key={i} className="flex items-baseline justify-between gap-3 border-t border-neutral-200 px-3.5 py-2.75">
+                          <span className="text-[12.5px] font-semibold text-neutral-700">{ft.label}</span>
+                          <span className="flex items-baseline gap-1.75 text-right">
+                            <span className="text-[13.5px] font-bold text-neutral-950">{ft.value}</span>
+                            <span className="text-[11.5px] text-neutral-500">{ft.note}</span>
                           </span>
                         </div>
                       ))}
@@ -124,61 +104,39 @@ export default function Overview() {
           })}
         </div>
 
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 16 }}>
+        <div className="grid grid-cols-3 gap-4">
           {pendingCards.map((c) => (
-            <div
-              key={c.label}
-              className="hz-card"
-              style={{ display: 'flex', flexDirection: 'column', borderStyle: 'dashed', borderColor: 'var(--hz-neutral-300)', background: 'var(--hz-neutral-50)', boxShadow: 'none' }}
-            >
-              <div className="hz-card__body" style={{ gap: 0, padding: '24px 24px 20px', display: 'flex', flexDirection: 'column', flex: 1 }}>
-                <div style={{ display: 'flex', alignItems: 'flex-start', gap: 14 }}>
-                  <span
-                    style={{
-                      width: 44,
-                      height: 44,
-                      borderRadius: 12,
-                      background: 'var(--hz-neutral-100)',
-                      color: 'var(--hz-neutral-400)',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      flex: 'none',
-                    }}
-                  >
-                    <i className={`far ${c.icon}`} style={{ fontSize: 19 }} />
+            <div key={c.label} className="flex flex-col rounded-lg border border-dashed border-neutral-300 bg-neutral-50">
+              <div className="flex flex-1 flex-col p-6 pb-5">
+                <div className="flex items-start gap-3.5">
+                  <span className="flex h-11 w-11 flex-none items-center justify-center rounded-xl bg-neutral-100 text-neutral-400">
+                    <i className={`far ${c.icon} text-[19px]`} />
                   </span>
-                  <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', gap: 3 }}>
-                    <div style={{ fontWeight: 700, fontSize: 17, letterSpacing: '-.015em', color: 'var(--hz-neutral-500)' }}>{c.label}</div>
-                    <div className="hz-body-s hz-muted" style={{ textTransform: 'none', letterSpacing: 0 }}>
-                      {c.idn}
-                    </div>
+                  <div className="flex flex-1 min-w-0 flex-col gap-0.75">
+                    <div className="text-[17px] font-bold tracking-[-.015em] text-neutral-500">{c.label}</div>
+                    <div className="text-xs text-neutral-500">{c.idn}</div>
                   </div>
                 </div>
-                <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', gap: 16, marginTop: 22 }}>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-                    <span className="om-val" style={{ fontSize: 44, lineHeight: 1, color: 'var(--hz-neutral-300)' }}>
-                      —
-                    </span>
-                    <span className="hz-body-s hz-muted">data belum tersedia</span>
+                <div className="mt-5.5 flex items-end justify-between gap-4">
+                  <div className="flex flex-col gap-1">
+                    <span className="font-display text-[44px] leading-none font-bold tracking-[-.03em] text-neutral-300">—</span>
+                    <span className="text-xs text-neutral-500">data belum tersedia</span>
                   </div>
                 </div>
-                <div style={{ marginTop: 20, height: 14, borderRadius: 999, background: 'var(--hz-neutral-200)' }} />
+                <div className="mt-5 h-3.5 rounded-full bg-neutral-200" />
               </div>
             </div>
           ))}
         </div>
 
-        <div className="hz-card">
-          <div className="hz-card__header">
+        <div className="flex flex-col rounded-lg border border-neutral-200 bg-white shadow-md">
+          <div className="flex items-center justify-between border-b border-neutral-200 p-6">
             <div>
-              <div className="hz-h6" style={{ margin: 0 }}>
-                Peta Operasional
-              </div>
-              <div className="hz-body-s hz-muted">Batas IUP · pit aktif · rute hauling</div>
+              <div className="text-lg font-bold tracking-tight text-neutral-950">Peta Operasional</div>
+              <div className="text-xs text-neutral-500">Batas IUP · pit aktif · rute hauling</div>
             </div>
-            <span className="hz-chip hz-chip--clickable">
-              <i className="far fa-expand" style={{ marginRight: 6 }} />
+            <span className="inline-flex cursor-pointer items-center gap-1 rounded-lg border border-neutral-300 px-3 py-0.5 text-sm text-neutral-600 hover:border-primary-600 hover:text-primary-600">
+              <i className="far fa-expand mr-1.5" />
               Buka penuh
             </span>
           </div>

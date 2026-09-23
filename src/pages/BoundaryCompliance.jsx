@@ -13,6 +13,10 @@ export default function BoundaryCompliance() {
   const { bcKpis3, bcTrend, bcTrendMonthly, bcMatrix } = useMemo(() => buildBoundaryComplianceData(range), [range])
   const trend = period === 'monthly' ? bcTrendMonthly : bcTrend
   const indexKey = period === 'monthly' ? 'month' : 'week'
+  // Compliance % is now a plain count (compliant/total), so it can land
+  // anywhere 0-100 — the chart's floor has to track that instead of
+  // assuming values always sit in the low-90s.
+  const trendMin = Math.max(0, Math.floor(Math.min(...trend.map((t) => t.Actual)) / 5) * 5 - 5)
 
   return (
     <PageShell active="Peta Boundary">
@@ -22,7 +26,7 @@ export default function BoundaryCompliance() {
           className="flex h-8 cursor-pointer items-center gap-2 rounded-lg px-4 text-sm font-bold text-primary-600 hover:bg-primary-50"
         >
           <i className="far fa-arrow-left" />
-          Ringkasan
+          Reporting Dashboard
         </span>
         <span className="h-5.5 w-px bg-neutral-200" />
         <span className="text-sm font-bold text-neutral-950">Boundary Compliance</span>
@@ -54,7 +58,7 @@ export default function BoundaryCompliance() {
                   </div>
                   {k.showBar && (
                     <div className="mt-4">
-                      <CategoryBar barPct={k.barW} fillColor={k.legend[0].color} remainderColor="#EEF0F5" legend={k.legend} />
+                      <CategoryBar barPct={k.barW} fillColor={k.legend[0].color} remainderColor="#EEF0F5" legend={k.legend} direction="column" />
                     </div>
                   )}
                 </div>
@@ -97,9 +101,10 @@ export default function BoundaryCompliance() {
                   strokeWidth={2.5}
                   valueFormatter={pctFmt}
                   height={236}
-                  minValue={90}
+                  minValue={trendMin}
                   maxValue={102}
                   showDots
+                  startEndOnly={period === 'weekly'}
                 />
               )}
             </div>

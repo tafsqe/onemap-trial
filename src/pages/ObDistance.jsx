@@ -4,8 +4,56 @@ import DateRangePicker from '../components/DateRangePicker.jsx'
 import PageShell from '../components/PageShell.jsx'
 import CategoryBar from '../components/CategoryBar.jsx'
 import AchievementBar from '../components/AchievementBar.jsx'
-import { LineChart } from '../lib/ds.js'
-import { OB_BASELINE_RANGE, buildObDistanceData, obCats, obColors, obVolCats, obVolColors, pctFmt } from '../data/dummy.js'
+import { ComboChart } from '../lib/ds.js'
+import { OB_BASELINE_RANGE, buildObDistanceData, obBarCats, obLineCats, obBarColors, obLineColors, meterFmt, bcmFmt, pctWholeFmt } from '../data/dummy.js'
+
+function KpiCard({ k }) {
+  return (
+    <div className="flex flex-col rounded-lg border border-neutral-200 bg-white shadow-md">
+      <div className="flex flex-col gap-0 p-6">
+        <div className="flex items-start justify-between gap-2.5">
+          <span className="text-[10.5px] font-bold tracking-[.13em] text-neutral-500 uppercase">{k.label}</span>
+          <span className={`flex-none ${k.cls}`}>{k.chip}</span>
+        </div>
+        <div className="mt-2.5 flex items-baseline gap-1.75">
+          <span className="font-display text-[28px] leading-none font-bold tracking-[-.03em] text-neutral-950">{k.value}</span>
+        </div>
+        <div className="mt-4">
+          <CategoryBar barPct={k.barW} fillColor={k.legend[0].color} remainderColor="#EEF0F5" legend={k.legend} />
+        </div>
+      </div>
+    </div>
+  )
+}
+
+function TrendChart({ title, unitLabel, data, valueFormatter }) {
+  return (
+    <div className="flex flex-col rounded-lg border border-neutral-200 bg-white shadow-md">
+      <div className="flex items-start justify-between gap-3 border-b border-neutral-200 p-6">
+        <div>
+          <div className="text-lg font-bold tracking-tight text-neutral-950">{title}</div>
+          <div className="mt-1 text-xs text-neutral-500">Rata-rata bulanan seluruh site</div>
+        </div>
+        <span className="flex-none text-xs text-neutral-500 whitespace-nowrap">{unitLabel}</span>
+      </div>
+      <div className="flex flex-col gap-3 p-6 pt-4">
+        {ComboChart && (
+          <ComboChart
+            data={data}
+            index="day"
+            barCategories={obBarCats}
+            lineCategories={obLineCats}
+            barColors={obBarColors}
+            lineColors={obLineColors}
+            valueFormatter={valueFormatter}
+            lineValueFormatter={pctWholeFmt}
+            height={252}
+          />
+        )}
+      </div>
+    </div>
+  )
+}
 
 function SiteTable({ title, rows }) {
   return (
@@ -65,7 +113,7 @@ export default function ObDistance() {
           className="flex h-8 cursor-pointer items-center gap-2 rounded-lg px-4 text-sm font-bold text-primary-600 hover:bg-primary-50"
         >
           <i className="far fa-arrow-left" />
-          Ringkasan
+          Reporting Dashboard
         </span>
         <span className="h-5.5 w-px bg-neutral-200" />
         <span className="text-sm font-bold text-neutral-950">OB Distance</span>
@@ -73,78 +121,17 @@ export default function ObDistance() {
         <DateRangePicker value={range} onChange={setRange} width={140} />
       </div>
 
-      <div className="flex flex-col gap-4 px-6 pt-5.5 pb-6.5">
-        <div className="grid grid-cols-2 gap-4">
-          {obKpis4b.map((k) => (
-            <div key={k.label} className="flex flex-col rounded-lg border border-neutral-200 bg-white shadow-md">
-              <div className="flex flex-col gap-0 p-6">
-                <span className="min-h-6 text-[10.5px] font-bold tracking-[.13em] text-neutral-500 uppercase">{k.label}</span>
-                <div className="mt-2.5 flex items-baseline justify-between gap-2.5">
-                  <span className="font-display text-[28px] leading-none font-bold tracking-[-.03em] text-neutral-950">{k.value}</span>
-                  <span className="font-display flex-none text-[28px] leading-none font-bold tracking-[-.03em] text-neutral-950">{k.pct}</span>
-                </div>
-                <div className="mt-4">
-                  <CategoryBar barPct={k.barW} fillColor={k.legend[0].color} remainderColor="#EEF0F5" legend={k.legend} />
-                </div>
-              </div>
-            </div>
-          ))}
+      <div className="grid grid-cols-2 items-start gap-4 px-6 pt-5.5 pb-6.5">
+        <div className="flex flex-col gap-4">
+          <KpiCard k={obKpis4b[0]} />
+          <TrendChart title="OB Distance Achievement Trend" unitLabel="Dalam satuan meter" data={obSeries} valueFormatter={meterFmt} />
+          <SiteTable title="OB Distance per Site" rows={obDistRows} />
         </div>
 
-        <div className="grid grid-cols-2 gap-4">
-          <div className="flex flex-col rounded-lg border border-neutral-200 bg-white shadow-md">
-            <div className="border-b border-neutral-200 p-6">
-              <div className="text-lg font-bold tracking-tight text-neutral-950">OB Distance Achievement Trend</div>
-              <div className="mt-1 text-xs text-neutral-500">Rata-rata bulanan seluruh site</div>
-            </div>
-            <div className="flex flex-col gap-3 p-6 pt-4">
-              {LineChart && (
-                <LineChart
-                  data={obSeries}
-                  index="day"
-                  categories={obCats}
-                  colors={obColors}
-                  type="line"
-                  fill="none"
-                  strokeWidth={2.5}
-                  valueFormatter={pctFmt}
-                  height={252}
-                  minValue={60}
-                  maxValue={100}
-                  showDots
-                />
-              )}
-            </div>
-          </div>
-          <SiteTable title="OB Distance Achievement Trend" rows={obDistRows} />
-        </div>
-
-        <div className="grid grid-cols-2 gap-4">
-          <div className="flex flex-col rounded-lg border border-neutral-200 bg-white shadow-md">
-            <div className="border-b border-neutral-200 p-6">
-              <div className="text-lg font-bold tracking-tight text-neutral-950">OB Volume Achievement Trend</div>
-              <div className="mt-1 text-xs text-neutral-500">Rata-rata bulanan seluruh site</div>
-            </div>
-            <div className="flex flex-col gap-3 p-6 pt-4">
-              {LineChart && (
-                <LineChart
-                  data={obVolSeries}
-                  index="day"
-                  categories={obVolCats}
-                  colors={obVolColors}
-                  type="line"
-                  fill="none"
-                  strokeWidth={2.5}
-                  valueFormatter={pctFmt}
-                  height={252}
-                  minValue={0}
-                  maxValue={40}
-                  showDots
-                />
-              )}
-            </div>
-          </div>
-          <SiteTable title="OB Volume Achievement Trend" rows={obVolRows} />
+        <div className="flex flex-col gap-4">
+          <KpiCard k={obKpis4b[1]} />
+          <TrendChart title="OB Volume Achievement Trend" unitLabel="Dalam satuan BCM" data={obVolSeries} valueFormatter={bcmFmt} />
+          <SiteTable title="OB Volume per Site" rows={obVolRows} />
         </div>
       </div>
     </PageShell>

@@ -67,6 +67,15 @@ export function scaleValue(base, range, baseline, key, noise = 0.08) {
 // `endValue`. Exact baseline range -> `baseShape` unchanged.
 export function buildSeries(baseShape, endValue, range, baseline, key, volatility = 0.06) {
   if (isBaseline(range, baseline)) return baseShape
+  return anchorSeries(baseShape, endValue, range, key, volatility)
+}
+
+// Same shape-preserving rescale as buildSeries, but always anchors to
+// `endValue` — including at the baseline range. Use this instead of
+// buildSeries when `endValue` is a plain computed fact (e.g. a count-based
+// percentage) rather than a simulated, range-varying metric, so the chart
+// never disagrees with the number next to it.
+export function anchorSeries(baseShape, endValue, range, key, volatility = 0.06) {
   const lastBase = baseShape[baseShape.length - 1]
   return baseShape.map((v, i) => {
     const trend = (v / lastBase) * endValue

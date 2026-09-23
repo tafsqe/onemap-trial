@@ -7,7 +7,7 @@
 // from src/lib/rangeSim.js's seeded RNG — same range always reproduces the
 // same numbers, different ranges/fields drift independently.
 
-import { buildSeries, fmt0, fmt1, fmt2, fmtHa0, fmtSigned1, jitterValue, rangeDays, scaleValue, toneLenient, toneLowBar, toneStandard } from '../lib/rangeSim.js'
+import { anchorSeries, buildSeries, fmt0, fmt1, fmt2, fmtHa0, fmtSigned1, jitterValue, rangeDays, scaleValue, toneLenient, toneLowBar, toneStandard } from '../lib/rangeSim.js'
 
 export const themeCls = 'theme-hz-azure'
 export const basemap = 'satellite'
@@ -17,6 +17,24 @@ const CHIP_DANGER = 'inline-flex items-center gap-1 rounded-lg border border-red
 const CHIP_WARN = 'inline-flex items-center gap-1 rounded-lg border border-yellow-200 bg-yellow-50 px-3 py-0.5 text-sm whitespace-nowrap text-yellow-700'
 const CHIP_NEUTRAL = 'inline-flex items-center gap-1 rounded-lg border border-neutral-300 bg-transparent px-3 py-0.5 text-sm whitespace-nowrap text-neutral-600'
 
+// Regulations tracked for boundary compliance — shared by the Overview
+// landing card and the Boundary Compliance detail page, so both always
+// agree on the same % (this is a straight count, not a simulated metric:
+// X of Y tracked regulations are in violation, so % compliant = compliant / total * 100).
+const bcMatrixMeta = [
+  { label: 'IUPK', icon: 'fa-file-alt', violation: true, site: 'LMO', baseHa: 30, allSites: true },
+  { label: 'RKAB', icon: 'fa-file-invoice', violation: false },
+  { label: 'AMDAL', icon: 'fa-leaf', violation: true, site: 'GMO', baseHa: 1000 },
+  { label: 'FS', icon: 'fa-cog', violation: false },
+  { label: 'IPPKH', icon: 'fa-tree', violation: false },
+  { label: 'RR', icon: 'fa-shield-alt', violation: false },
+  { label: 'RPT', icon: 'fa-align-left', violation: false },
+]
+const bcTotalRegs = bcMatrixMeta.length
+const bcCompliantRegs = bcMatrixMeta.filter((r) => !r.violation).length
+const bcViolationRegs = bcTotalRegs - bcCompliantRegs
+const bcComplianceValue = (bcCompliantRegs / bcTotalRegs) * 100
+
 // ---------------------------------------------------------------------------
 // Overview (1a)
 // ---------------------------------------------------------------------------
@@ -25,15 +43,18 @@ export const OVERVIEW_BASELINE_RANGE = { start: '2026-08-15', end: '2026-09-14' 
 const OV = OVERVIEW_BASELINE_RANGE
 
 export function buildReadyCards(range) {
-  const bcValue = jitterValue(93.3, range, OV, 'ov.bc.value', 3, 80, 100)
-  const bcOutside = 100 - bcValue
-  const bcGap = jitterValue(-6.7, range, OV, 'ov.bc.gap', 2, -20, 0)
+  // Same compliance formula as the Boundary Compliance detail page (compliant
+  // / total regulations) — no independent simulation, so the two pages never
+  // disagree on this number.
+  const bcValue = bcComplianceValue
+  const bcGap = bcValue - 100
   const iupkHa = scaleValue(30, range, OV, 'ov.bc.iupk')
   const amdalHa = scaleValue(50, range, OV, 'ov.bc.amdal')
   const boundaryLain = Math.max(0, Math.round(scaleValue(5, range, OV, 'ov.bc.lain')))
 
   const prValue = jitterValue(120.1, range, OV, 'ov.pr.value', 8, 60, 180)
   const prGap = jitterValue(20.1, range, OV, 'ov.pr.gap', 6, -40, 80)
+  const prTotalTon = scaleValue(12485142, range, OV, 'ov.pr.total')
   const coalGetting = scaleValue(6121078, range, OV, 'ov.pr.coal')
   const shipment = scaleValue(6121078, range, OV, 'ov.pr.ship')
   const inventory = scaleValue(1710762, range, OV, 'ov.pr.inv')
@@ -46,16 +67,16 @@ export function buildReadyCards(range) {
   return [
     {
       id: 'bc',
-      label: 'Boundary Compliance',
-      idn: 'Kepatuhan Batas Wilayah',
+      label: 'Boundary',
+      idn: 'Kepatuhan terhadap regulasi',
       icon: 'fa-draw-polygon',
       value: fmt1(bcValue),
-      unit: '% in-boundary',
+      unit: 'Mematuhi regulasi',
       target: '/boundary-compliance',
-      catValues: [bcValue, bcOutside],
+      catValues: [bcValue, 100 - bcValue],
       catLabels: [
-        { text: `In-boundary ${fmt1(bcValue)}%`, color: '#159367' },
-        { text: `Outside boundary ${fmt1(bcOutside)}%`, color: '#D92222' },
+        { text: `Patuh: ${bcCompliantRegs} regulasi`, color: '#159367' },
+        { text: `Melanggar: ${bcViolationRegs} regulasi`, color: '#D92222' },
       ],
       remainderColor: '#D92222',
       iconBg: 'var(--hz-red-50)',
@@ -78,10 +99,10 @@ export function buildReadyCards(range) {
       idn: 'Coal Getting + Shipment',
       icon: 'fa-mountain',
       value: fmt1(prValue),
-      unit: '% Actual',
+      unit: 'Actual',
       target: '/production',
       catValues: [100, 0],
-      catLabels: [{ text: `Actual ${fmt1(prValue)}%`, color: '#006CEB' }],
+      catLabels: [{ text: `Actual ${fmt0(prTotalTon)} ton`, color: '#006CEB' }],
       remainderColor: '#EEF0F5',
       iconBg: 'var(--hz-azure-50)',
       iconColor: 'var(--hz-horizon-primary)',
@@ -92,9 +113,9 @@ export function buildReadyCards(range) {
       gapColor: 'var(--hz-green-700)',
       gapBg: 'var(--hz-green-50)',
       facts: [
-        { label: 'Coal Getting', value: `${fmt0(coalGetting)} t`, note: 'bulan ini' },
-        { label: 'Shipment', value: `${fmt0(shipment)} t`, note: 'bulan ini' },
-        { label: 'Inventory', value: `${fmt0(inventory)} t`, note: 'bulan ini' },
+        { label: 'Coal Getting', value: `${fmt0(coalGetting)} Ton`, note: '' },
+        { label: 'Shipment', value: `${fmt0(shipment)} Ton`, note: '' },
+        { label: 'Inventory', value: `${fmt0(inventory)} Ton`, note: '' },
       ],
     },
     {
@@ -103,10 +124,10 @@ export function buildReadyCards(range) {
       idn: 'Jarak Angkut Overburden',
       icon: 'fa-route',
       value: fmt1(obValue),
-      unit: '% Actual',
+      unit: 'Actual',
       target: '/ob-distance',
       catValues: [obValue, 100 - obValue],
-      catLabels: [{ text: `Actual ${fmt1(obValue)}%`, color: '#006CEB' }],
+      catLabels: [{ text: `Actual ${fmt0(aktualM)} m`, color: '#006CEB' }],
       remainderColor: '#EEF0F5',
       iconBg: 'var(--hz-azure-50)',
       iconColor: 'var(--hz-horizon-primary)',
@@ -117,8 +138,8 @@ export function buildReadyCards(range) {
       gapColor: 'var(--hz-green-700)',
       gapBg: 'var(--hz-green-50)',
       facts: [
-        { label: 'Aktual', value: `${fmt0(aktualM)} m`, note: 'rata-rata' },
-        { label: 'Target', value: `${fmt2(targetM)} m`, note: 'target bulan' },
+        { label: 'Aktual', value: `${fmt0(aktualM)} m`, note: '' },
+        { label: 'Target', value: `${fmt2(targetM)} m`, note: '' },
       ],
     },
   ]
@@ -186,11 +207,17 @@ export const mapFlushStyle = { borderRadius: 0, border: 'none', borderTop: '1px 
 export const BOUNDARY_BASELINE_RANGE = { start: '2026-08-15', end: '2026-09-14' }
 const BC = BOUNDARY_BASELINE_RANGE
 
-const bcWeeks = ['W23', 'W24', 'W25', 'W26', 'W27', 'W28', 'W29', 'W30', 'W31', 'W32']
-const bcWeeklyActualBase = [98.6, 98.2, 97.9, 97.1, 96.4, 95.8, 95.0, 94.4, 93.8, 93.3]
+// Full calendar year — buildSeries rescales this shape to end at the current
+// compliance value, so only the wavy-decline shape here actually matters.
+const bcWeeks = Array.from({ length: 52 }, (_, i) => `W${i + 1}`)
+const bcWeeklyActualBase = Array.from({ length: 52 }, (_, i) => {
+  const decline = 99 - (i / 51) * 9
+  const wave = Math.sin((i / 52) * Math.PI * 6) * 1.5
+  return Math.round((decline + wave) * 10) / 10
+})
 
-const bcMonths = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu']
-const bcMonthlyActualBase = [98.4, 97.6, 96.9, 96.0, 95.2, 94.5, 93.9, 93.3]
+const bcMonths = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des']
+const bcMonthlyActualBase = [98.4, 97.6, 96.9, 96.0, 95.2, 94.5, 93.9, 93.3, 92.8, 92.1, 91.5, 90.8]
 
 export const bcCats = ['Actual', 'Target']
 export const bcColors = ['blue', 'neutral']
@@ -198,27 +225,16 @@ export const bcDashed = ['Target']
 
 export const bcMatrixSites = ['LMO', 'SMO', 'GMO', 'BMO1', 'BMO2', 'BMO3']
 
-const bcMatrixMeta = [
-  { label: 'IUPK', icon: 'fa-file-alt', violation: true, site: 'LMO', baseHa: 30, allSites: true },
-  { label: 'RKAB', icon: 'fa-file-invoice', violation: false },
-  { label: 'AMDAL', icon: 'fa-leaf', violation: true, site: 'GMO', baseHa: 1000 },
-  { label: 'FS', icon: 'fa-cog', violation: false },
-  { label: 'IPPKH', icon: 'fa-tree', violation: false },
-  { label: 'RR', icon: 'fa-shield-alt', violation: false },
-  { label: 'RPT', icon: 'fa-align-left', violation: false },
-  { label: 'LAND', icon: 'fa-mountain', violation: false },
-]
-
 const bcOkCell = { bg: 'var(--hz-green-50)', fg: 'var(--hz-green-700)', icon: 'fa-check', val: '0' }
 const bcViolationCell = (ha) => ({ bg: 'var(--hz-red-600)', fg: '#fff', icon: 'fa-exclamation-triangle', val: `${fmtHa0(ha)} Ha` })
 
 export function buildBoundaryComplianceData(range) {
-  const value = jitterValue(93.3, range, BC, 'bc.value', 3, 80, 100)
-  const gap = jitterValue(-6.7, range, BC, 'bc.gap', 2, -20, 0)
+  const value = bcComplianceValue
+  const gap = value - 100
 
   const bcKpis3 = [
     {
-      label: 'Area in-boundary',
+      label: 'Compliance Achievement',
       value: fmt1(value),
       unit: '%',
       chip: fmtSigned1(gap),
@@ -228,18 +244,22 @@ export function buildBoundaryComplianceData(range) {
       barW: `${fmt1(value)}%`,
       showBar: true,
       legend: [
-        { text: `In-boundary ${fmt1(value)}%`, color: '#159367' },
-        { text: 'Target 100%', color: '#8490A1' },
+        { text: `Patuh: ${bcCompliantRegs} regulasi`, color: '#159367' },
+        { text: `Melanggar: ${bcViolationRegs} regulasi`, color: '#D92222' },
       ],
     },
-    { label: 'Total boundary keluar', value: '2', unit: 'boundary', chip: '', showBar: false },
-    { label: 'Boundaries checked', value: String(bcMatrixMeta.length), unit: 'boundary', chip: '', showBar: false },
+    { label: 'Total boundary keluar', value: String(bcViolationRegs), unit: 'boundary', chip: '', showBar: false },
+    { label: 'Boundaries checked', value: String(bcTotalRegs), unit: 'boundary', chip: '', showBar: false },
   ]
 
-  const weeklyActual = buildSeries(bcWeeklyActualBase, value, range, BC, 'bc.trend.weekly')
+  // 52 weeks won't fit the x-axis without overlapping, so the axis itself
+  // only shows the first/last week (startEndOnly on the LineChart) — but the
+  // `week` field stays accurate for every point so hovering always reveals
+  // exactly which week it is.
+  const weeklyActual = anchorSeries(bcWeeklyActualBase, value, range, 'bc.trend.weekly')
   const bcTrend = bcWeeks.map((week, i) => ({ week, Actual: weeklyActual[i], Target: 100 }))
 
-  const monthlyActual = buildSeries(bcMonthlyActualBase, value, range, BC, 'bc.trend.monthly')
+  const monthlyActual = anchorSeries(bcMonthlyActualBase, value, range, 'bc.trend.monthly')
   const bcTrendMonthly = bcMonths.map((month, i) => ({ month, Actual: monthlyActual[i], Target: 100 }))
 
   const bcMatrix = bcMatrixMeta.map((r) => {
@@ -273,8 +293,8 @@ export const prodLineCats = ['Achievement']
 export const prodColors = ['blue', 'neutral']
 export const prodLineColors = ['orange']
 
-const prodMonths = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug']
-const prodActualBase = [980, 1040, 1120, 1180, 1250, 1310, 1390, 1450]
+const prodMonths = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+const prodActualBase = [980, 1040, 1120, 1180, 1250, 1310, 1390, 1450, 1480, 1520, 1560, 1600]
 
 const prodRowsMeta = [
   { pit: 'LMO', basePlan: 1715000, baseActual: 1602020, baseAch: 93.7 },
@@ -381,14 +401,14 @@ export function buildProductionData(range) {
 export const OB_BASELINE_RANGE = { start: '2026-09-02', end: '2026-09-09' }
 const OB = OB_BASELINE_RANGE
 
-export const obCats = ['Achievement']
-export const obColors = ['green']
-export const obVolCats = ['Achievement']
-export const obVolColors = ['blue']
+export const obBarCats = ['Actual', 'Target']
+export const obLineCats = ['Achievement']
+export const obBarColors = ['blue', 'neutral']
+export const obLineColors = ['orange']
 
-const obMonths = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug']
-const obDistAchievementBase = [78, 80, 82, 85, 87, 88, 89, 87.2]
-const obVolAchievementBase = [18, 20, 22, 24, 27, 29, 28, 25.2]
+const obMonths = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+const obDistAchievementBase = [78, 80, 82, 85, 87, 88, 89, 87.2, 86, 88, 90, 91]
+const obVolAchievementBase = [18, 20, 22, 24, 27, 29, 28, 25.2, 27, 26, 28, 30]
 
 const obDistRowsMeta = [
   { site: 'LMO', baseActual: 2091, basePlan: 3545.64, baseAch: 100 },
@@ -421,8 +441,7 @@ export function buildObDistanceData(range) {
     {
       label: 'OB Distance',
       value: `${fmt0(actualM)} m`,
-      pct: `${fmt1(distPct)}%`,
-      chip: distPct >= 85 ? 'On Track' : distPct >= 60 ? 'Watch' : 'Delay',
+      chip: `${fmt1(distPct)}%`,
       cls: distPct >= 85 ? CHIP_SUCCESS : distPct >= 60 ? CHIP_WARN : CHIP_DANGER,
       barW: `${fmt1(distPct)}%`,
       legend: [
@@ -433,8 +452,7 @@ export function buildObDistanceData(range) {
     {
       label: 'OB Volume',
       value: `${fmt0(volActual)} BCM`,
-      pct: `${fmt1(volPct)}%`,
-      chip: volPct >= 40 ? 'On Track' : volPct >= 15 ? 'Watch' : 'Delay',
+      chip: `${fmt1(volPct)}%`,
       cls: volPct >= 40 ? CHIP_SUCCESS : volPct >= 15 ? CHIP_WARN : CHIP_DANGER,
       barW: `${fmt1(volPct)}%`,
       legend: [
@@ -444,11 +462,15 @@ export function buildObDistanceData(range) {
     },
   ]
 
-  const distSeries = buildSeries(obDistAchievementBase, distPct, range, OB, 'ob.dist.chart')
-  const obSeries = obMonths.map((day, i) => ({ day, Achievement: distSeries[i] }))
+  // Combo charts (bars = Actual/Target, line = Achievement) so hovering any
+  // month shows all three, matching the Production detail page. Target is
+  // flat (the page's overall target); Actual is derived from the achievement
+  // shape so the three numbers stay internally consistent.
+  const distAchSeries = buildSeries(obDistAchievementBase, distPct, range, OB, 'ob.dist.chart')
+  const obSeries = obMonths.map((day, i) => ({ day, Actual: (distAchSeries[i] / 100) * targetM, Target: targetM, Achievement: distAchSeries[i] }))
 
-  const volSeries = buildSeries(obVolAchievementBase, volPct, range, OB, 'ob.vol.chart')
-  const obVolSeries = obMonths.map((day, i) => ({ day, Achievement: volSeries[i] }))
+  const volAchSeries = buildSeries(obVolAchievementBase, volPct, range, OB, 'ob.vol.chart')
+  const obVolSeries = obMonths.map((day, i) => ({ day, Actual: (volAchSeries[i] / 100) * volTarget, Target: volTarget, Achievement: volAchSeries[i] }))
 
   const obDistRows = obDistRowsMeta.map((r) => {
     const actual = scaleValue(r.baseActual, range, OB, `ob.dist.row.${r.site}.actual`)
@@ -473,4 +495,16 @@ export function buildObDistanceData(range) {
 
 export const pctFmt = (v) => v.toFixed(1) + '%'
 export const pctWholeFmt = (v) => v.toFixed(0) + '%'
-export const ktFmt = (v) => v.toFixed(1) + ' kt'
+// prodSeries' Actual/Target are stored in kt (thousand ton); the chart shows
+// plain Ton figures (no repeated unit per tick — the card header says
+// "Semua angka dalam Ton" once instead).
+export const tonNumFmt = (v) => fmt0(v * 1000)
+// No repeated "m" per tick — the card header says "Dalam satuan meter" once instead.
+export const meterFmt = (v) => fmt0(v)
+// Axis ticks land on round millions ("100 juta"); tooltip/bar values rarely
+// do, so those get one decimal ("42.4 juta") instead of a misleading ".0".
+// No repeated "BCM" per tick — the card header says "Dalam satuan BCM" once instead.
+export const bcmFmt = (v) => {
+  const m = v / 1e6
+  return (Number.isInteger(m) ? fmt0(m) : m.toFixed(1)) + ' juta'
+}

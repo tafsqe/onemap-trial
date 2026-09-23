@@ -64,7 +64,10 @@ export default function Overview() {
 
                   <div className="mt-5.5 flex items-center justify-between gap-4">
                     <div className="flex flex-col gap-1">
-                      <span className="font-display text-[44px] leading-none font-bold tracking-[-.03em] text-neutral-950">{c.value}</span>
+                      <span className="flex items-baseline gap-1">
+                        <span className="font-display text-[44px] leading-none font-bold tracking-[-.03em] text-neutral-950">{c.value}</span>
+                        <span className="text-lg font-semibold text-neutral-500">%</span>
+                      </span>
                       <span className="text-xs whitespace-nowrap text-neutral-500">{c.unit}</span>
                     </div>
                     <div className="flex flex-col items-end gap-2">
@@ -93,7 +96,7 @@ export default function Overview() {
                           <span className="text-[12.5px] font-semibold text-neutral-700">{ft.label}</span>
                           <span className="flex items-baseline gap-1.75 text-right">
                             <span className="text-[13.5px] font-bold text-neutral-950">{ft.value}</span>
-                            <span className="text-[11.5px] text-neutral-500">{ft.note}</span>
+                            {ft.note && <span className="text-[11.5px] text-neutral-500">{ft.note}</span>}
                           </span>
                         </div>
                       ))}

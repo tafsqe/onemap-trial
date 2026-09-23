@@ -5,7 +5,7 @@ import PageShell from '../components/PageShell.jsx'
 import CategoryBar from '../components/CategoryBar.jsx'
 import AchievementBar from '../components/AchievementBar.jsx'
 import { ComboChart } from '../lib/ds.js'
-import { PRODUCTION_BASELINE_RANGE, buildProductionData, prodBarCats, prodLineCats, prodColors, prodLineColors, ktFmt, pctWholeFmt } from '../data/dummy.js'
+import { PRODUCTION_BASELINE_RANGE, buildProductionData, prodBarCats, prodLineCats, prodColors, prodLineColors, tonNumFmt, pctWholeFmt } from '../data/dummy.js'
 
 export default function Production() {
   const navigate = useNavigate()
@@ -15,14 +15,15 @@ export default function Production() {
   return (
     <PageShell active="Dashboard">
       <div className="flex h-14 items-center gap-3 border-b border-neutral-200 bg-white px-5">
-        <span onClick={() => navigate('/')} className="flex h-8 cursor-pointer items-center rounded-lg px-4 text-primary-600 hover:bg-primary-50">
+        <span
+          onClick={() => navigate('/')}
+          className="flex h-8 cursor-pointer items-center gap-2 rounded-lg px-4 text-sm font-bold text-primary-600 hover:bg-primary-50"
+        >
           <i className="far fa-arrow-left" />
+          Reporting Dashboard
         </span>
-        <nav className="flex flex-wrap items-center gap-2 text-xs text-neutral-500">
-          <span className="cursor-pointer hover:text-primary-600">Ringkasan</span>
-          <i className="far fa-chevron-right text-[10px] text-neutral-300" />
-          <span className="font-semibold text-neutral-950">Production</span>
-        </nav>
+        <span className="h-5.5 w-px bg-neutral-200" />
+        <span className="text-sm font-bold text-neutral-950">Production</span>
         <span className="h-5.5 w-px bg-neutral-200" />
         <span className="inline-flex cursor-pointer items-center gap-1 rounded-lg border border-neutral-300 px-3 py-0.5 text-sm text-neutral-600 hover:border-primary-600 hover:text-primary-600">
           <i className="far fa-map-marker-alt mr-1.75" />
@@ -54,7 +55,7 @@ export default function Production() {
                   <span className="text-sm text-neutral-500">{k.unit}</span>
                 </div>
                 <div className="mt-4">
-                  <CategoryBar barPct={k.barW} fillColor={k.legend[0].color} remainderColor="#EEF0F5" legend={k.legend} direction="column" />
+                  <CategoryBar barPct={k.barW} fillColor={k.legend[0].color} remainderColor="#EEF0F5" legend={k.legend} />
                 </div>
               </div>
             </div>
@@ -64,6 +65,7 @@ export default function Production() {
         <div className="flex flex-col rounded-lg border border-neutral-200 bg-white shadow-md">
           <div className="flex items-center justify-between border-b border-neutral-200 p-6">
             <div className="text-lg font-bold tracking-tight text-neutral-950">Achievement per bulan</div>
+            <span className="text-xs text-neutral-500">Semua angka dalam Ton</span>
           </div>
           <div className="flex flex-col gap-3 p-6 pt-4">
             {ComboChart && (
@@ -74,7 +76,7 @@ export default function Production() {
                 lineCategories={prodLineCats}
                 barColors={prodColors}
                 lineColors={prodLineColors}
-                valueFormatter={ktFmt}
+                valueFormatter={tonNumFmt}
                 lineValueFormatter={pctWholeFmt}
                 height={268}
               />

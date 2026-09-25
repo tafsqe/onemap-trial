@@ -54,10 +54,10 @@ export function buildReadyCards(range) {
 
   const prValue = jitterValue(120.1, range, OV, 'ov.pr.value', 8, 60, 180)
   const prGap = jitterValue(20.1, range, OV, 'ov.pr.gap', 6, -40, 80)
-  const prTotalTon = scaleValue(12485142, range, OV, 'ov.pr.total')
-  const coalGetting = scaleValue(6121078, range, OV, 'ov.pr.coal')
-  const shipment = scaleValue(6121078, range, OV, 'ov.pr.ship')
-  const inventory = scaleValue(1710762, range, OV, 'ov.pr.inv')
+  const prTotalTon = scaleValue(28715827, range, OV, 'ov.pr.total')
+  const coalGetting = scaleValue(14078479, range, OV, 'ov.pr.coal')
+  const shipment = scaleValue(14078479, range, OV, 'ov.pr.ship')
+  const inventory = scaleValue(3934753, range, OV, 'ov.pr.inv')
 
   const obValue = jitterValue(87.2, range, OV, 'ov.ob.value', 5, 40, 100)
   const obGap = jitterValue(2.2, range, OV, 'ov.ob.gap', 2, -20, 20)
@@ -294,25 +294,25 @@ export const prodColors = ['blue', 'neutral']
 export const prodLineColors = ['orange']
 
 const prodMonths = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
-const prodActualBase = [980, 1040, 1120, 1180, 1250, 1310, 1390, 1450, 1480, 1520, 1560, 1600]
+const prodActualBase = [19600, 20800, 22400, 23600, 25000, 26200, 27800, 29000, 29600, 30400, 31200, 32000]
 
 const prodRowsMeta = [
-  { pit: 'LMO', basePlan: 1715000, baseActual: 1602020, baseAch: 93.7 },
-  { pit: 'SMO', basePlan: 1190000, baseActual: 826727, baseAch: 138.6 },
-  { pit: 'GMO', basePlan: 1188000, baseActual: 1630041, baseAch: 136.2 },
-  { pit: 'BMO1', basePlan: 170000, baseActual: 205400, baseAch: 121.5 },
-  { pit: 'BMO2', basePlan: 1630000, baseActual: 2044991, baseAch: 127.5 },
-  { pit: 'BMO3', basePlan: 155000, baseActual: 54885, baseAch: 35.0 },
+  { pit: 'LMO', basePlan: 3944500, baseActual: 3684646, baseAch: 93.7 },
+  { pit: 'SMO', basePlan: 2737000, baseActual: 1901472, baseAch: 138.6 },
+  { pit: 'GMO', basePlan: 2732400, baseActual: 3749094, baseAch: 136.2 },
+  { pit: 'BMO1', basePlan: 391000, baseActual: 472420, baseAch: 121.5 },
+  { pit: 'BMO2', basePlan: 3749000, baseActual: 4703479, baseAch: 127.5 },
+  { pit: 'BMO3', basePlan: 356500, baseActual: 126235, baseAch: 35.0 },
 ]
 
 export function buildProductionData(range) {
   const dayRatio = rangeDays(range) / rangeDays(PR)
 
-  const totalValue = scaleValue(12485142, range, PR, 'pr.total')
+  const totalValue = scaleValue(28715827, range, PR, 'pr.total')
   const totalGap = jitterValue(20.1, range, PR, 'pr.total.gap', 6, -40, 90)
   const totalLegendPct = jitterValue(120.1, range, PR, 'pr.total.legend', 6, 60, 180)
 
-  const coalValue = scaleValue(6121078, range, PR, 'pr.coal')
+  const coalValue = scaleValue(14078479, range, PR, 'pr.coal')
   const coalGap = jitterValue(23.2, range, PR, 'pr.coal.gap', 6, -40, 90)
   const coalLegendPct = jitterValue(123.2, range, PR, 'pr.coal.legend', 6, 60, 180)
 
@@ -373,7 +373,7 @@ export function buildProductionData(range) {
   ]
 
   const actualSeries = buildSeries(prodActualBase, prodActualBase[prodActualBase.length - 1] * dayRatio, range, PR, 'pr.chart.actual')
-  const targetSeries = prodMonths.map(() => 1000 * dayRatio)
+  const targetSeries = prodMonths.map(() => 20000 * dayRatio)
   const achievementSeries = actualSeries.map((a, i) => (a / targetSeries[i]) * 100)
   const prodSeries = prodMonths.map((day, i) => ({ day, Actual: actualSeries[i], Target: targetSeries[i], Achievement: achievementSeries[i] }))
 
@@ -420,12 +420,12 @@ const obDistRowsMeta = [
 ]
 
 const obVolRowsMeta = [
-  { site: 'LMO', baseActual: 6451014, basePlan: 57875550, baseAch: 12 },
-  { site: 'SMO', baseActual: 3267395, basePlan: 21710065, baseAch: 15 },
-  { site: 'GMO', baseActual: 4023401, basePlan: 23602903, baseAch: 17 },
-  { site: 'BMO1', baseActual: 140239, basePlan: 11255254, baseAch: 1 },
-  { site: 'BMO2', baseActual: 8929272, basePlan: 54590632, baseAch: 16 },
-  { site: 'BMO3', baseActual: 326712, basePlan: 2391419, baseAch: 14 },
+  { site: 'LMO', baseActual: 806377, basePlan: 7234444, baseAch: 12 },
+  { site: 'SMO', baseActual: 408424, basePlan: 2713758, baseAch: 15 },
+  { site: 'GMO', baseActual: 502925, basePlan: 2950363, baseAch: 17 },
+  { site: 'BMO1', baseActual: 17530, basePlan: 1406907, baseAch: 1 },
+  { site: 'BMO2', baseActual: 1116159, basePlan: 6823829, baseAch: 16 },
+  { site: 'BMO3', baseActual: 40839, basePlan: 298927, baseAch: 14 },
 ]
 
 export function buildObDistanceData(range) {
@@ -434,7 +434,7 @@ export function buildObDistanceData(range) {
   const actualM = (distPct / 100) * targetM
 
   const volPct = jitterValue(25.2, range, OB, 'ob.vol.pct', 6, 5, 60)
-  const volTarget = scaleValue(168425823, range, OB, 'ob.vol.target')
+  const volTarget = scaleValue(21053228, range, OB, 'ob.vol.target')
   const volActual = (volPct / 100) * volTarget
 
   const obKpis4b = [

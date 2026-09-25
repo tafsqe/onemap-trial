@@ -981,6 +981,14 @@ function hzTicks(min, max, n) {
   for (let v = lo; v <= hi + step / 2; v += step) out.push(+v.toFixed(10));
   return out;
 }
+// Round ticks from 0 that end exactly on a fixed `max` (e.g. 25M -> 5M steps).
+function hzFixedTicks(max) {
+  for (const n of [4, 5, 3, 6, 2]) {
+    const t = hzTicks(0, max, n);
+    if (t[t.length - 1] === max) return t;
+  }
+  return [0, 1, 2, 3, 4].map(i => max * i / 4);
+}
 const HZ_AXIS = {
   fontFamily: "var(--hz-font-sans, Inter, sans-serif)",
   fontSize: 11,
@@ -1027,6 +1035,7 @@ function ComboChart({
   barRadius = 4,
   showLegend = true,
   showGridLines = true,
+  barMaxValue,
   yAxisWidth = 56,
   rightAxisWidth = 48,
   className = '',
@@ -1069,12 +1078,12 @@ function ComboChart({
   const lMax = Math.max(0, ...barRows.map(r => stackBars ? r.total : Math.max(...r.raw, 0)));
   const rMax = Math.max(0, ...data.map(r => Math.max(...lineCategories.map(c => Number(r[c]) || 0))));
   const rMin = Math.min(0, ...data.map(r => Math.min(...lineCategories.map(c => Number(r[c]) || 0))));
-  const ltk = hzTicks(0, lMax, 4),
+  const ltk = barMaxValue ? hzFixedTicks(barMaxValue) : hzTicks(0, lMax, 4),
     rtk = hzTicks(rMin, rMax, 4);
   const lTop = ltk[ltk.length - 1],
     rTop = rtk[rtk.length - 1],
     rBot = rtk[0];
-  const yL = v => h - v / (lTop || 1) * h;
+  const yL = v => h - Math.min(v, lTop) / (lTop || 1) * h;
   const yR = v => h - (v - rBot) / (rTop - rBot || 1) * h;
   const band = w / Math.max(1, data.length);
   const barSize = stackBars ? Math.min(band * .55, 40) : Math.min(band * .62 / Math.max(1, bars.length), 26);

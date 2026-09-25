@@ -78,6 +78,8 @@ export default function Production() {
                 lineColors={prodLineColors}
                 valueFormatter={tonNumFmt}
                 lineValueFormatter={pctWholeFmt}
+                barMaxValue={40000}
+                yAxisWidth={72}
                 height={268}
               />
             )}

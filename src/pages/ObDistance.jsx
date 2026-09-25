@@ -26,7 +26,7 @@ function KpiCard({ k }) {
   )
 }
 
-function TrendChart({ title, unitLabel, data, valueFormatter }) {
+function TrendChart({ title, unitLabel, data, valueFormatter, barMaxValue }) {
   return (
     <div className="flex flex-col rounded-lg border border-neutral-200 bg-white shadow-md">
       <div className="flex items-start justify-between gap-3 border-b border-neutral-200 p-6">
@@ -47,6 +47,7 @@ function TrendChart({ title, unitLabel, data, valueFormatter }) {
             lineColors={obLineColors}
             valueFormatter={valueFormatter}
             lineValueFormatter={pctWholeFmt}
+            barMaxValue={barMaxValue}
             height={252}
           />
         )}
@@ -124,13 +125,13 @@ export default function ObDistance() {
       <div className="grid grid-cols-2 items-start gap-4 px-6 pt-5.5 pb-6.5">
         <div className="flex flex-col gap-4">
           <KpiCard k={obKpis4b[0]} />
-          <TrendChart title="OB Distance Achievement Trend" unitLabel="Dalam satuan meter" data={obSeries} valueFormatter={meterFmt} />
+          <TrendChart title="OB Distance Achievement Trend" unitLabel="Dalam satuan meter" data={obSeries} valueFormatter={meterFmt} barMaxValue={4000} />
           <SiteTable title="OB Distance per Site" rows={obDistRows} />
         </div>
 
         <div className="flex flex-col gap-4">
           <KpiCard k={obKpis4b[1]} />
-          <TrendChart title="OB Volume Achievement Trend" unitLabel="Dalam satuan BCM" data={obVolSeries} valueFormatter={bcmFmt} />
+          <TrendChart title="OB Volume Achievement Trend" unitLabel="Dalam satuan BCM" data={obVolSeries} valueFormatter={bcmFmt} barMaxValue={25e6} />
           <SiteTable title="OB Volume per Site" rows={obVolRows} />
         </div>
       </div>

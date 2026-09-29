@@ -259,8 +259,9 @@ export function buildBoundaryComplianceData(range, trendYear = 2026, trendMonth 
   // are shown, so the x-axis never has to cram in a full year of weeks.
   const weeklyActual = anchorSeries(bcWeeklyActualBase, value, range, `bc.trend.weekly.${trendYear}`)
   const weeksPerMonth = 52 / 12
-  const weekStart = Math.round(trendMonth * weeksPerMonth)
-  const weekEnd = Math.round((trendMonth + 1) * weeksPerMonth)
+  const showAllMonths = trendMonth === -1
+  const weekStart = showAllMonths ? 0 : Math.round(trendMonth * weeksPerMonth)
+  const weekEnd = showAllMonths ? 52 : Math.round((trendMonth + 1) * weeksPerMonth)
   const bcTrend = bcWeeks.slice(weekStart, weekEnd).map((week, i) => ({ week, Actual: weeklyActual[weekStart + i], Target: 100 }))
 
   // Bulanan is scoped to a year and always shows the full Jan-Des shape.
@@ -444,23 +445,23 @@ export function buildObDistanceData(range, distTrendYear = 2026, volTrendYear = 
     {
       label: 'OB Distance',
       value: `${fmt0(actualM)} m`,
-      chip: `${fmt1(distPct)}%`,
+      chip: fmtSigned1(distPct - 100),
       cls: distPct >= 85 ? CHIP_SUCCESS : distPct >= 60 ? CHIP_WARN : CHIP_DANGER,
       barW: `${fmt1(distPct)}%`,
       legend: [
-        { text: `Actual ${fmt0(actualM)} m`, color: '#006CEB' },
-        { text: `Target ${fmt2(targetM)} m`, color: '#8490A1' },
+        { text: `Actual ${fmt1(distPct)}%`, color: '#006CEB' },
+        { text: 'Target 100%', color: '#8490A1' },
       ],
     },
     {
       label: 'OB Volume',
       value: `${fmt0(volActual)} BCM`,
-      chip: `${fmt1(volPct)}%`,
+      chip: fmtSigned1(volPct - 100),
       cls: volPct >= 40 ? CHIP_SUCCESS : volPct >= 15 ? CHIP_WARN : CHIP_DANGER,
       barW: `${fmt1(volPct)}%`,
       legend: [
-        { text: `Actual ${fmt0(volActual)} BCM`, color: '#006CEB' },
-        { text: `Target ${fmt0(volTarget)} BCM`, color: '#8490A1' },
+        { text: `Actual ${fmt1(volPct)}%`, color: '#006CEB' },
+        { text: 'Target 100%', color: '#8490A1' },
       ],
     },
   ]

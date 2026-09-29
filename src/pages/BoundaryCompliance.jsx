@@ -84,6 +84,7 @@ export default function BoundaryCompliance() {
                       onChange={(e) => setTrendMonth(Number(e.target.value))}
                       className="rounded-lg border border-neutral-300 bg-white px-2.5 py-1.5 text-sm font-semibold text-neutral-700 hover:border-neutral-400"
                     >
+                      <option value={-1}>Semua Bulan</option>
                       {MONTHS_ID.map((m, i) => (
                         <option key={m} value={i}>
                           {m}

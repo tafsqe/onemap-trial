@@ -73,10 +73,7 @@ function SiteTable({ title, rows }) {
   return (
     <div className="flex min-w-0 flex-col rounded-lg border border-neutral-200 bg-white shadow-md">
       <div className="border-b border-neutral-200 p-6">
-        <div className="text-lg font-bold tracking-tight text-neutral-950">
-          {title}
-          <div className="mt-1 text-xs font-normal text-neutral-500">Rata-rata bulanan seluruh site</div>
-        </div>
+        <div className="text-lg font-bold tracking-tight text-neutral-950">{title}</div>
       </div>
       <div className="overflow-x-auto">
         <table className="w-full border-separate border-spacing-0 text-sm">

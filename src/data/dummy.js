@@ -14,7 +14,6 @@ export const basemap = 'satellite'
 
 const CHIP_SUCCESS = 'inline-flex items-center gap-1 rounded-lg border border-green-200 bg-green-50 px-3 py-0.5 text-sm whitespace-nowrap text-green-700'
 const CHIP_DANGER = 'inline-flex items-center gap-1 rounded-lg border border-red-200 bg-red-50 px-3 py-0.5 text-sm whitespace-nowrap text-red-700'
-const CHIP_WARN = 'inline-flex items-center gap-1 rounded-lg border border-yellow-200 bg-yellow-50 px-3 py-0.5 text-sm whitespace-nowrap text-yellow-700'
 const CHIP_NEUTRAL = 'inline-flex items-center gap-1 rounded-lg border border-neutral-300 bg-transparent px-3 py-0.5 text-sm whitespace-nowrap text-neutral-600'
 
 // Regulations tracked for boundary compliance — shared by the Overview
@@ -57,7 +56,6 @@ export function buildReadyCards(range) {
   const prTotalTon = scaleValue(28715827, range, OV, 'ov.pr.total')
   const coalGetting = scaleValue(14078479, range, OV, 'ov.pr.coal')
   const shipment = scaleValue(14078479, range, OV, 'ov.pr.ship')
-  const inventory = scaleValue(3934753, range, OV, 'ov.pr.inv')
 
   const obValue = jitterValue(87.2, range, OV, 'ov.ob.value', 5, 40, 100)
   const obGap = jitterValue(2.2, range, OV, 'ov.ob.gap', 2, -20, 20)
@@ -96,7 +94,7 @@ export function buildReadyCards(range) {
     {
       id: 'pr',
       label: 'Production',
-      idn: 'Coal Getting + Shipment',
+      idn: 'Kepatuhan Produksi Coal',
       icon: 'fa-mountain',
       value: fmt1(prValue),
       unit: 'Actual',
@@ -115,7 +113,7 @@ export function buildReadyCards(range) {
       facts: [
         { label: 'Coal Getting', value: `${fmt0(coalGetting)} Ton`, note: '' },
         { label: 'Shipment', value: `${fmt0(shipment)} Ton`, note: '' },
-        { label: 'Inventory', value: `${fmt0(inventory)} Ton`, note: '' },
+        { label: 'Inventory', value: 'Belum tersedia', note: '' },
       ],
     },
     {
@@ -313,6 +311,8 @@ const prodRowsMeta = [
 
 export const prodTrendYears = [2024, 2025, 2026]
 
+export const prodPlanOptions = ['Semua', 'Budget', 'Commitment', 'RKAB', 'R3MMP', 'Improvement']
+
 export function buildProductionData(range, trendYear = 2026) {
   const dayRatio = rangeDays(range) / rangeDays(PR)
 
@@ -446,7 +446,7 @@ export function buildObDistanceData(range, distTrendYear = 2026, volTrendYear = 
       label: 'OB Distance',
       value: `${fmt0(actualM)} m`,
       chip: fmtSigned1(distPct - 100),
-      cls: distPct >= 85 ? CHIP_SUCCESS : distPct >= 60 ? CHIP_WARN : CHIP_DANGER,
+      cls: distPct >= 100 ? CHIP_SUCCESS : CHIP_DANGER,
       barW: `${fmt1(distPct)}%`,
       legend: [
         { text: `Actual ${fmt1(distPct)}%`, color: '#006CEB' },
@@ -457,7 +457,7 @@ export function buildObDistanceData(range, distTrendYear = 2026, volTrendYear = 
       label: 'OB Volume',
       value: `${fmt0(volActual)} BCM`,
       chip: fmtSigned1(volPct - 100),
-      cls: volPct >= 40 ? CHIP_SUCCESS : volPct >= 15 ? CHIP_WARN : CHIP_DANGER,
+      cls: volPct >= 100 ? CHIP_SUCCESS : CHIP_DANGER,
       barW: `${fmt1(volPct)}%`,
       legend: [
         { text: `Actual ${fmt1(volPct)}%`, color: '#006CEB' },

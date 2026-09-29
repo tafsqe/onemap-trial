@@ -5,12 +5,24 @@ import PageShell from '../components/PageShell.jsx'
 import CategoryBar from '../components/CategoryBar.jsx'
 import AchievementBar from '../components/AchievementBar.jsx'
 import { ComboChart } from '../lib/ds.js'
-import { PRODUCTION_BASELINE_RANGE, buildProductionData, prodBarCats, prodLineCats, prodColors, prodLineColors, prodTrendYears, tonNumFmt, pctWholeFmt } from '../data/dummy.js'
+import {
+  PRODUCTION_BASELINE_RANGE,
+  buildProductionData,
+  prodBarCats,
+  prodLineCats,
+  prodColors,
+  prodLineColors,
+  prodTrendYears,
+  prodPlanOptions,
+  tonNumFmt,
+  pctWholeFmt,
+} from '../data/dummy.js'
 
 export default function Production() {
   const navigate = useNavigate()
   const [range, setRange] = useState(PRODUCTION_BASELINE_RANGE)
   const [trendYear, setTrendYear] = useState(2026)
+  const [plan, setPlan] = useState('Semua')
   const { prodKpis3a, prodSeries, prodRows } = useMemo(() => buildProductionData(range, trendYear), [range, trendYear])
 
   return (
@@ -33,6 +45,17 @@ export default function Production() {
         <span className="inline-flex cursor-pointer items-center gap-1 rounded-lg border border-neutral-300 px-3 py-0.5 text-sm text-neutral-600 hover:border-primary-600 hover:text-primary-600">
           Semua kontraktor
         </span>
+        <select
+          value={plan}
+          onChange={(e) => setPlan(e.target.value)}
+          className="rounded-lg border border-neutral-300 bg-white px-3 py-0.5 text-sm text-neutral-600 hover:border-primary-600 hover:text-primary-600"
+        >
+          {prodPlanOptions.map((p) => (
+            <option key={p} value={p}>
+              {p}
+            </option>
+          ))}
+        </select>
         <span className="flex-1" />
         <DateRangePicker value={range} onChange={setRange} width={130} />
       </div>

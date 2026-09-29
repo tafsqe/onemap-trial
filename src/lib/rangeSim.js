@@ -96,13 +96,3 @@ export function toneStandard(ach) {
   if (ach < 100) return 'var(--hz-horizon-primary)'
   return 'var(--hz-green-600)'
 }
-export function toneLenient(ach) {
-  if (ach < 50) return 'var(--hz-red-500)'
-  if (ach < 90) return 'var(--hz-horizon-primary)'
-  return 'var(--hz-green-500)'
-}
-export function toneLowBar(ach) {
-  if (ach < 5) return 'var(--hz-red-500)'
-  if (ach < 100) return 'var(--hz-yellow-500)'
-  return 'var(--hz-green-500)'
-}

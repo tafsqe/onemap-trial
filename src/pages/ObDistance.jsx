@@ -5,7 +5,7 @@ import PageShell from '../components/PageShell.jsx'
 import CategoryBar from '../components/CategoryBar.jsx'
 import AchievementBar from '../components/AchievementBar.jsx'
 import { ComboChart } from '../lib/ds.js'
-import { OB_BASELINE_RANGE, buildObDistanceData, obBarCats, obLineCats, obBarColors, obLineColors, meterFmt, bcmFmt, pctWholeFmt } from '../data/dummy.js'
+import { OB_BASELINE_RANGE, buildObDistanceData, obBarCats, obLineCats, obBarColors, obLineColors, obTrendYears, meterFmt, bcmFmt, pctWholeFmt } from '../data/dummy.js'
 
 function KpiCard({ k }) {
   return (
@@ -26,7 +26,7 @@ function KpiCard({ k }) {
   )
 }
 
-function TrendChart({ title, unitLabel, data, valueFormatter, barMaxValue }) {
+function TrendChart({ title, unitLabel, data, valueFormatter, barMaxValue, trendYear, onTrendYearChange }) {
   return (
     <div className="flex flex-col rounded-lg border border-neutral-200 bg-white shadow-md">
       <div className="flex items-start justify-between gap-3 border-b border-neutral-200 p-6">
@@ -34,7 +34,20 @@ function TrendChart({ title, unitLabel, data, valueFormatter, barMaxValue }) {
           <div className="text-lg font-bold tracking-tight text-neutral-950">{title}</div>
           <div className="mt-1 text-xs text-neutral-500">Rata-rata bulanan seluruh site</div>
         </div>
-        <span className="flex-none text-xs text-neutral-500 whitespace-nowrap">{unitLabel}</span>
+        <div className="flex flex-none items-center gap-3">
+          <select
+            value={trendYear}
+            onChange={(e) => onTrendYearChange(Number(e.target.value))}
+            className="rounded-lg border border-neutral-300 bg-white px-2.5 py-1.5 text-sm font-semibold text-neutral-700 hover:border-neutral-400"
+          >
+            {obTrendYears.map((y) => (
+              <option key={y} value={y}>
+                {y}
+              </option>
+            ))}
+          </select>
+          <span className="text-xs text-neutral-500 whitespace-nowrap">{unitLabel}</span>
+        </div>
       </div>
       <div className="flex flex-col gap-3 p-6 pt-4">
         {ComboChart && (
@@ -104,7 +117,12 @@ function SiteTable({ title, rows }) {
 export default function ObDistance() {
   const navigate = useNavigate()
   const [range, setRange] = useState(OB_BASELINE_RANGE)
-  const { obKpis4b, obSeries, obVolSeries, obDistRows, obVolRows } = useMemo(() => buildObDistanceData(range), [range])
+  const [distTrendYear, setDistTrendYear] = useState(2026)
+  const [volTrendYear, setVolTrendYear] = useState(2026)
+  const { obKpis4b, obSeries, obVolSeries, obDistRows, obVolRows } = useMemo(
+    () => buildObDistanceData(range, distTrendYear, volTrendYear),
+    [range, distTrendYear, volTrendYear],
+  )
 
   return (
     <PageShell active="Peta">
@@ -125,13 +143,29 @@ export default function ObDistance() {
       <div className="grid grid-cols-2 items-start gap-4 px-6 pt-5.5 pb-6.5">
         <div className="flex flex-col gap-4">
           <KpiCard k={obKpis4b[0]} />
-          <TrendChart title="OB Distance Achievement Trend" unitLabel="Dalam satuan meter" data={obSeries} valueFormatter={meterFmt} barMaxValue={4000} />
+          <TrendChart
+            title="OB Distance Achievement Trend"
+            unitLabel="Dalam satuan meter"
+            data={obSeries}
+            valueFormatter={meterFmt}
+            barMaxValue={4000}
+            trendYear={distTrendYear}
+            onTrendYearChange={setDistTrendYear}
+          />
           <SiteTable title="OB Distance per Site" rows={obDistRows} />
         </div>
 
         <div className="flex flex-col gap-4">
           <KpiCard k={obKpis4b[1]} />
-          <TrendChart title="OB Volume Achievement Trend" unitLabel="Dalam satuan BCM" data={obVolSeries} valueFormatter={bcmFmt} barMaxValue={25e6} />
+          <TrendChart
+            title="OB Volume Achievement Trend"
+            unitLabel="Dalam satuan BCM"
+            data={obVolSeries}
+            valueFormatter={bcmFmt}
+            barMaxValue={25e6}
+            trendYear={volTrendYear}
+            onTrendYearChange={setVolTrendYear}
+          />
           <SiteTable title="OB Volume per Site" rows={obVolRows} />
         </div>
       </div>

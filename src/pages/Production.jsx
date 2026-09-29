@@ -5,12 +5,13 @@ import PageShell from '../components/PageShell.jsx'
 import CategoryBar from '../components/CategoryBar.jsx'
 import AchievementBar from '../components/AchievementBar.jsx'
 import { ComboChart } from '../lib/ds.js'
-import { PRODUCTION_BASELINE_RANGE, buildProductionData, prodBarCats, prodLineCats, prodColors, prodLineColors, tonNumFmt, pctWholeFmt } from '../data/dummy.js'
+import { PRODUCTION_BASELINE_RANGE, buildProductionData, prodBarCats, prodLineCats, prodColors, prodLineColors, prodTrendYears, tonNumFmt, pctWholeFmt } from '../data/dummy.js'
 
 export default function Production() {
   const navigate = useNavigate()
   const [range, setRange] = useState(PRODUCTION_BASELINE_RANGE)
-  const { prodKpis3a, prodSeries, prodRows } = useMemo(() => buildProductionData(range), [range])
+  const [trendYear, setTrendYear] = useState(2026)
+  const { prodKpis3a, prodSeries, prodRows } = useMemo(() => buildProductionData(range, trendYear), [range, trendYear])
 
   return (
     <PageShell active="Dashboard">
@@ -37,7 +38,7 @@ export default function Production() {
       </div>
 
       <div className="flex flex-col gap-4 px-6 pt-5 pb-6.5">
-        <div className="grid grid-cols-4 gap-4">
+        <div className="grid grid-cols-3 gap-4">
           {prodKpis3a.map((k) => (
             <div key={k.label} className="flex flex-col rounded-lg border border-neutral-200 bg-white shadow-md">
               <div className="flex flex-col gap-0 p-6">
@@ -64,8 +65,21 @@ export default function Production() {
 
         <div className="flex flex-col rounded-lg border border-neutral-200 bg-white shadow-md">
           <div className="flex items-center justify-between border-b border-neutral-200 p-6">
-            <div className="text-lg font-bold tracking-tight text-neutral-950">Achievement per bulan</div>
-            <span className="text-xs text-neutral-500">Semua angka dalam Ton</span>
+            <div className="text-lg font-bold tracking-tight text-neutral-950">Achievement Coal Getting per bulan</div>
+            <div className="flex items-center gap-3">
+              <select
+                value={trendYear}
+                onChange={(e) => setTrendYear(Number(e.target.value))}
+                className="rounded-lg border border-neutral-300 bg-white px-2.5 py-1.5 text-sm font-semibold text-neutral-700 hover:border-neutral-400"
+              >
+                {prodTrendYears.map((y) => (
+                  <option key={y} value={y}>
+                    {y}
+                  </option>
+                ))}
+              </select>
+              <span className="text-xs text-neutral-500">Semua angka dalam Ton</span>
+            </div>
           </div>
           <div className="flex flex-col gap-3 p-6 pt-4">
             {ComboChart && (

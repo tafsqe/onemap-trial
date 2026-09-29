@@ -21,6 +21,13 @@ export function addMonths(date, n) {
   return new Date(date.getFullYear(), date.getMonth() + n, 1)
 }
 
+// Single-date display, e.g. "15 Sep 2026".
+export function formatDate(iso) {
+  const d = fromISO(iso)
+  const day = String(d.getDate()).padStart(2, '0')
+  return `${day} ${MONTHS_ID[d.getMonth()]} ${d.getFullYear()}`
+}
+
 // Matches the mockup's two date-range styles: "01–31 Agu 2026" when the
 // range sits inside one month, "15 Agu – 14 Sep 2026" otherwise.
 export function formatRange(range) {

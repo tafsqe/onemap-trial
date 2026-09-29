@@ -250,7 +250,7 @@ export function buildBoundaryComplianceData(range, trendYear = 2026, trendMonth 
         { text: `Melanggar: ${bcViolationRegs} regulasi`, color: '#D92222' },
       ],
     },
-    { label: 'Total boundary keluar', value: String(bcViolationRegs), unit: 'boundary', chip: '', showBar: false },
+    { label: 'Total boundary dilanggar', value: String(bcViolationRegs), unit: 'boundary', chip: '', showBar: false },
     { label: 'Boundaries checked', value: String(bcTotalRegs), unit: 'boundary', chip: '', showBar: false },
   ]
 

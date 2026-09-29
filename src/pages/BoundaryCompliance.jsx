@@ -1,16 +1,23 @@
 import { useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import DateRangePicker from '../components/DateRangePicker.jsx'
+import SingleDatePicker from '../components/SingleDatePicker.jsx'
 import PageShell from '../components/PageShell.jsx'
 import CategoryBar from '../components/CategoryBar.jsx'
 import { LineChart } from '../lib/ds.js'
-import { BOUNDARY_BASELINE_RANGE, buildBoundaryComplianceData, bcCats, bcColors, bcDashed, bcMatrixSites, pctFmt } from '../data/dummy.js'
+import { MONTHS_ID } from '../lib/date.js'
+import { BOUNDARY_BASELINE_RANGE, buildBoundaryComplianceData, bcCats, bcColors, bcDashed, bcMatrixSites, bcTrendYears, pctFmt } from '../data/dummy.js'
 
 export default function BoundaryCompliance() {
   const navigate = useNavigate()
   const [period, setPeriod] = useState('weekly')
-  const [range, setRange] = useState(BOUNDARY_BASELINE_RANGE)
-  const { bcKpis3, bcTrend, bcTrendMonthly, bcMatrix } = useMemo(() => buildBoundaryComplianceData(range), [range])
+  const [asOfDate, setAsOfDate] = useState(BOUNDARY_BASELINE_RANGE.end)
+  const [trendYear, setTrendYear] = useState(2026)
+  const [trendMonth, setTrendMonth] = useState(8)
+  const range = useMemo(() => ({ start: BOUNDARY_BASELINE_RANGE.start, end: asOfDate }), [asOfDate])
+  const { bcKpis3, bcTrend, bcTrendMonthly, bcMatrix } = useMemo(
+    () => buildBoundaryComplianceData(range, trendYear, trendMonth),
+    [range, trendYear, trendMonth],
+  )
   const trend = period === 'monthly' ? bcTrendMonthly : bcTrend
   const indexKey = period === 'monthly' ? 'month' : 'week'
   // Compliance % is now a plain count (compliant/total), so it can land
@@ -31,7 +38,7 @@ export default function BoundaryCompliance() {
         <span className="h-5.5 w-px bg-neutral-200" />
         <span className="text-sm font-bold text-neutral-950">Boundary Compliance</span>
         <span className="flex-1" />
-        <DateRangePicker value={range} onChange={setRange} />
+        <SingleDatePicker value={asOfDate} onChange={setAsOfDate} />
       </div>
 
       <div className="flex flex-col gap-4 px-6 pt-5.5 pb-6.5">
@@ -69,24 +76,65 @@ export default function BoundaryCompliance() {
           <div className="flex flex-col rounded-lg border border-neutral-200 bg-white shadow-md">
             <div className="flex items-center justify-between border-b border-neutral-200 p-6">
               <div className="text-lg font-bold tracking-tight text-neutral-950">Compliance trend</div>
-              <nav className="inline-flex gap-0.5 rounded-md bg-neutral-100 p-[3px]">
-                <button
-                  onClick={() => setPeriod('weekly')}
-                  className={`rounded px-3.5 py-2 text-sm font-semibold transition-colors ${
-                    period === 'weekly' ? 'bg-white text-neutral-950 shadow-sm' : 'text-neutral-500 hover:text-neutral-950'
-                  }`}
-                >
-                  Mingguan
-                </button>
-                <button
-                  onClick={() => setPeriod('monthly')}
-                  className={`rounded px-3.5 py-2 text-sm font-semibold transition-colors ${
-                    period === 'monthly' ? 'bg-white text-neutral-950 shadow-sm' : 'text-neutral-500 hover:text-neutral-950'
-                  }`}
-                >
-                  Bulanan
-                </button>
-              </nav>
+              <div className="flex items-center gap-2.5">
+                {period === 'weekly' && (
+                  <>
+                    <select
+                      value={trendMonth}
+                      onChange={(e) => setTrendMonth(Number(e.target.value))}
+                      className="rounded-lg border border-neutral-300 bg-white px-2.5 py-1.5 text-sm font-semibold text-neutral-700 hover:border-neutral-400"
+                    >
+                      {MONTHS_ID.map((m, i) => (
+                        <option key={m} value={i}>
+                          {m}
+                        </option>
+                      ))}
+                    </select>
+                    <select
+                      value={trendYear}
+                      onChange={(e) => setTrendYear(Number(e.target.value))}
+                      className="rounded-lg border border-neutral-300 bg-white px-2.5 py-1.5 text-sm font-semibold text-neutral-700 hover:border-neutral-400"
+                    >
+                      {bcTrendYears.map((y) => (
+                        <option key={y} value={y}>
+                          {y}
+                        </option>
+                      ))}
+                    </select>
+                  </>
+                )}
+                {period === 'monthly' && (
+                  <select
+                    value={trendYear}
+                    onChange={(e) => setTrendYear(Number(e.target.value))}
+                    className="rounded-lg border border-neutral-300 bg-white px-2.5 py-1.5 text-sm font-semibold text-neutral-700 hover:border-neutral-400"
+                  >
+                    {bcTrendYears.map((y) => (
+                      <option key={y} value={y}>
+                        {y}
+                      </option>
+                    ))}
+                  </select>
+                )}
+                <nav className="inline-flex gap-0.5 rounded-md bg-neutral-100 p-[3px]">
+                  <button
+                    onClick={() => setPeriod('weekly')}
+                    className={`rounded px-3.5 py-2 text-sm font-semibold transition-colors ${
+                      period === 'weekly' ? 'bg-white text-neutral-950 shadow-sm' : 'text-neutral-500 hover:text-neutral-950'
+                    }`}
+                  >
+                    Mingguan
+                  </button>
+                  <button
+                    onClick={() => setPeriod('monthly')}
+                    className={`rounded px-3.5 py-2 text-sm font-semibold transition-colors ${
+                      period === 'monthly' ? 'bg-white text-neutral-950 shadow-sm' : 'text-neutral-500 hover:text-neutral-950'
+                    }`}
+                  >
+                    Bulanan
+                  </button>
+                </nav>
+              </div>
             </div>
             <div className="flex flex-col gap-3 p-6 pt-4">
               {LineChart && (
@@ -104,7 +152,6 @@ export default function BoundaryCompliance() {
                   minValue={trendMin}
                   maxValue={102}
                   showDots
-                  startEndOnly={period === 'weekly'}
                 />
               )}
             </div>

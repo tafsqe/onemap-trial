@@ -7,7 +7,7 @@
 // from src/lib/rangeSim.js's seeded RNG — same range always reproduces the
 // same numbers, different ranges/fields drift independently.
 
-import { anchorSeries, buildSeries, fmt0, fmt1, fmt2, fmtHa0, fmtSigned1, jitterValue, rangeDays, scaleValue, toneLenient, toneLowBar, toneStandard } from '../lib/rangeSim.js'
+import { anchorSeries, buildSeries, fmt0, fmt1, fmt2, fmtHa0, fmtSigned1, jitterValue, rangeDays, scaleValue, toneStandard } from '../lib/rangeSim.js'
 
 export const themeCls = 'theme-hz-azure'
 export const basemap = 'satellite'
@@ -228,7 +228,9 @@ export const bcMatrixSites = ['LMO', 'SMO', 'GMO', 'BMO1', 'BMO2', 'BMO3']
 const bcOkCell = { bg: 'var(--hz-green-50)', fg: 'var(--hz-green-700)', icon: 'fa-check', val: '0' }
 const bcViolationCell = (ha) => ({ bg: 'var(--hz-red-600)', fg: '#fff', icon: 'fa-exclamation-triangle', val: `${fmtHa0(ha)} Ha` })
 
-export function buildBoundaryComplianceData(range) {
+export const bcTrendYears = [2024, 2025, 2026]
+
+export function buildBoundaryComplianceData(range, trendYear = 2026, trendMonth = 8) {
   const value = bcComplianceValue
   const gap = value - 100
 
@@ -252,14 +254,17 @@ export function buildBoundaryComplianceData(range) {
     { label: 'Boundaries checked', value: String(bcTotalRegs), unit: 'boundary', chip: '', showBar: false },
   ]
 
-  // 52 weeks won't fit the x-axis without overlapping, so the axis itself
-  // only shows the first/last week (startEndOnly on the LineChart) — but the
-  // `week` field stays accurate for every point so hovering always reveals
-  // exactly which week it is.
-  const weeklyActual = anchorSeries(bcWeeklyActualBase, value, range, 'bc.trend.weekly')
-  const bcTrend = bcWeeks.map((week, i) => ({ week, Actual: weeklyActual[i], Target: 100 }))
+  // Mingguan is scoped to one month + year: the 52-week shape is split into
+  // 12 uneven chunks (~4-5 weeks each) and only the selected month's weeks
+  // are shown, so the x-axis never has to cram in a full year of weeks.
+  const weeklyActual = anchorSeries(bcWeeklyActualBase, value, range, `bc.trend.weekly.${trendYear}`)
+  const weeksPerMonth = 52 / 12
+  const weekStart = Math.round(trendMonth * weeksPerMonth)
+  const weekEnd = Math.round((trendMonth + 1) * weeksPerMonth)
+  const bcTrend = bcWeeks.slice(weekStart, weekEnd).map((week, i) => ({ week, Actual: weeklyActual[weekStart + i], Target: 100 }))
 
-  const monthlyActual = anchorSeries(bcMonthlyActualBase, value, range, 'bc.trend.monthly')
+  // Bulanan is scoped to a year and always shows the full Jan-Des shape.
+  const monthlyActual = anchorSeries(bcMonthlyActualBase, value, range, `bc.trend.monthly.${trendYear}`)
   const bcTrendMonthly = bcMonths.map((month, i) => ({ month, Actual: monthlyActual[i], Target: 100 }))
 
   const bcMatrix = bcMatrixMeta.map((r) => {
@@ -305,32 +310,20 @@ const prodRowsMeta = [
   { pit: 'BMO3', basePlan: 356500, baseActual: 126235, baseAch: 35.0 },
 ]
 
-export function buildProductionData(range) {
-  const dayRatio = rangeDays(range) / rangeDays(PR)
+export const prodTrendYears = [2024, 2025, 2026]
 
-  const totalValue = scaleValue(28715827, range, PR, 'pr.total')
-  const totalGap = jitterValue(20.1, range, PR, 'pr.total.gap', 6, -40, 90)
-  const totalLegendPct = jitterValue(120.1, range, PR, 'pr.total.legend', 6, 60, 180)
+export function buildProductionData(range, trendYear = 2026) {
+  const dayRatio = rangeDays(range) / rangeDays(PR)
 
   const coalValue = scaleValue(14078479, range, PR, 'pr.coal')
   const coalGap = jitterValue(23.2, range, PR, 'pr.coal.gap', 6, -40, 90)
   const coalLegendPct = jitterValue(123.2, range, PR, 'pr.coal.legend', 6, 60, 180)
 
+  const shipmentValue = scaleValue(14078479, range, PR, 'pr.ship')
+  const shipmentGap = jitterValue(18.5, range, PR, 'pr.ship.gap', 6, -40, 90)
+  const shipmentLegendPct = jitterValue(118.5, range, PR, 'pr.ship.legend', 6, 60, 180)
+
   const prodKpis3a = [
-    {
-      label: 'Production',
-      sub: 'Coal Getting + Shipment',
-      value: fmt0(totalValue),
-      unit: 'Ton',
-      chip: fmtSigned1(totalGap),
-      cls: totalGap >= 0 ? CHIP_SUCCESS : CHIP_DANGER,
-      valColor: 'var(--hz-text-primary)',
-      barW: '100%',
-      legend: [
-        { text: `Actual ${fmt1(totalLegendPct)}%`, color: '#006CEB' },
-        { text: 'Target 100%', color: '#8490A1' },
-      ],
-    },
     {
       label: 'Coal Getting',
       value: fmt0(coalValue),
@@ -346,15 +339,16 @@ export function buildProductionData(range) {
     },
     {
       label: 'Shipment',
-      value: '—',
+      sub: '(All Site)',
+      value: fmt0(shipmentValue),
       unit: 'Ton',
-      chip: 'Belum tersedia',
-      cls: CHIP_NEUTRAL,
-      valColor: 'var(--hz-neutral-400)',
-      barW: '0%',
+      chip: fmtSigned1(shipmentGap),
+      cls: shipmentGap >= 0 ? CHIP_SUCCESS : CHIP_DANGER,
+      valColor: 'var(--hz-text-primary)',
+      barW: '100%',
       legend: [
-        { text: 'Actual 0%', color: '#C6CDD7' },
-        { text: 'Target 0%', color: '#E4E8EE' },
+        { text: `Actual ${fmt1(shipmentLegendPct)}%`, color: '#006CEB' },
+        { text: 'Target 100%', color: '#8490A1' },
       ],
     },
     {
@@ -372,7 +366,14 @@ export function buildProductionData(range) {
     },
   ]
 
-  const actualSeries = buildSeries(prodActualBase, prodActualBase[prodActualBase.length - 1] * dayRatio, range, PR, 'pr.chart.actual')
+  // Baseline year (2026) keeps the exact buildSeries baseline-match behavior;
+  // picking another year always reseeds via anchorSeries so the chart
+  // actually changes even when the top date range is still the baseline.
+  const endValue = prodActualBase[prodActualBase.length - 1] * dayRatio
+  const actualSeries =
+    trendYear === 2026
+      ? buildSeries(prodActualBase, endValue, range, PR, 'pr.chart.actual')
+      : anchorSeries(prodActualBase, endValue, range, `pr.chart.actual.${trendYear}`)
   const targetSeries = prodMonths.map(() => 20000 * dayRatio)
   const achievementSeries = actualSeries.map((a, i) => (a / targetSeries[i]) * 100)
   const prodSeries = prodMonths.map((day, i) => ({ day, Actual: actualSeries[i], Target: targetSeries[i], Achievement: achievementSeries[i] }))
@@ -428,7 +429,9 @@ const obVolRowsMeta = [
   { site: 'BMO3', baseActual: 40839, basePlan: 298927, baseAch: 14 },
 ]
 
-export function buildObDistanceData(range) {
+export const obTrendYears = [2024, 2025, 2026]
+
+export function buildObDistanceData(range, distTrendYear = 2026, volTrendYear = 2026) {
   const distPct = jitterValue(87.2, range, OB, 'ob.dist.pct', 5, 40, 100)
   const targetM = scaleValue(2994.15, range, OB, 'ob.dist.target', 0.03)
   const actualM = (distPct / 100) * targetM
@@ -466,24 +469,33 @@ export function buildObDistanceData(range) {
   // month shows all three, matching the Production detail page. Target is
   // flat (the page's overall target); Actual is derived from the achievement
   // shape so the three numbers stay internally consistent.
-  const distAchSeries = buildSeries(obDistAchievementBase, distPct, range, OB, 'ob.dist.chart')
+  // Baseline year (2026) keeps the exact buildSeries baseline-match behavior;
+  // picking another year always reseeds via anchorSeries so the chart
+  // actually changes even when the top date range is still the baseline.
+  const distAchSeries =
+    distTrendYear === 2026
+      ? buildSeries(obDistAchievementBase, distPct, range, OB, 'ob.dist.chart')
+      : anchorSeries(obDistAchievementBase, distPct, range, `ob.dist.chart.${distTrendYear}`)
   const obSeries = obMonths.map((day, i) => ({ day, Actual: (distAchSeries[i] / 100) * targetM, Target: targetM, Achievement: distAchSeries[i] }))
 
-  const volAchSeries = buildSeries(obVolAchievementBase, volPct, range, OB, 'ob.vol.chart')
+  const volAchSeries =
+    volTrendYear === 2026
+      ? buildSeries(obVolAchievementBase, volPct, range, OB, 'ob.vol.chart')
+      : anchorSeries(obVolAchievementBase, volPct, range, `ob.vol.chart.${volTrendYear}`)
   const obVolSeries = obMonths.map((day, i) => ({ day, Actual: (volAchSeries[i] / 100) * volTarget, Target: volTarget, Achievement: volAchSeries[i] }))
 
   const obDistRows = obDistRowsMeta.map((r) => {
     const actual = scaleValue(r.baseActual, range, OB, `ob.dist.row.${r.site}.actual`)
     const plan = scaleValue(r.basePlan, range, OB, `ob.dist.row.${r.site}.plan`)
     const ach = jitterValue(r.baseAch, range, OB, `ob.dist.row.${r.site}.ach`, 5, 40, 100)
-    return { site: r.site, actual: fmt0(actual), plan: fmt2(plan), ach: `${fmt0(ach)}%`, bar: `${fmt0(Math.min(ach, 100))}%`, tone: toneLenient(ach) }
+    return { site: r.site, actual: fmt0(actual), plan: fmt2(plan), ach: `${fmt0(ach)}%`, bar: `${fmt0(Math.min(ach, 100))}%`, tone: toneStandard(ach) }
   })
 
   const obVolRows = obVolRowsMeta.map((r) => {
     const actual = scaleValue(r.baseActual, range, OB, `ob.vol.row.${r.site}.actual`)
     const plan = scaleValue(r.basePlan, range, OB, `ob.vol.row.${r.site}.plan`)
     const ach = jitterValue(r.baseAch, range, OB, `ob.vol.row.${r.site}.ach`, 4, 1, 60)
-    return { site: r.site, actual: fmt0(actual), plan: fmt0(plan), ach: `${fmt0(ach)}%`, bar: `${fmt0(Math.min(ach, 100))}%`, tone: toneLowBar(ach) }
+    return { site: r.site, actual: fmt0(actual), plan: fmt0(plan), ach: `${fmt0(ach)}%`, bar: `${fmt0(Math.min(ach, 100))}%`, tone: toneStandard(ach) }
   })
 
   return { obKpis4b, obSeries, obVolSeries, obDistRows, obVolRows }

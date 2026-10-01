@@ -339,17 +339,21 @@ export const prodPlanOptions = ['Budget', 'Commitment', 'RKAB', 'R3MMP', 'Improv
 // production is always measured independently of plan, so only target-
 // relative figures (gap chips, achievement bars, chart target/achievement
 // series) fall back to "Tidak tersedia" — the actual values stay real.
+// Demo case: this range always shows both KPI cards below target.
+const PR_MISS_RANGE = { start: '2026-08-15', end: '2026-08-31' }
+const isPrMissRange = (r) => r.start === PR_MISS_RANGE.start && r.end === PR_MISS_RANGE.end
+
 export function buildProductionData(range, trendYear = 2026, plan = 'R3MMP') {
   const dayRatio = rangeDays(range) / rangeDays(PR)
   const planUnavailable = plan === 'Budget'
 
   const coalValue = scaleValue(14078479, range, PR, 'pr.coal')
-  const coalGap = jitterValue(23.2, range, PR, 'pr.coal.gap', 6, -40, 90)
-  const coalLegendPct = jitterValue(123.2, range, PR, 'pr.coal.legend', 6, 60, 180)
+  const coalGap = isPrMissRange(range) ? -8.4 : jitterValue(23.2, range, PR, 'pr.coal.gap', 30, -40, 90)
+  const coalLegendPct = 100 + coalGap
 
   const shipmentValue = scaleValue(14078479, range, PR, 'pr.ship')
-  const shipmentGap = jitterValue(18.5, range, PR, 'pr.ship.gap', 6, -40, 90)
-  const shipmentLegendPct = jitterValue(118.5, range, PR, 'pr.ship.legend', 6, 60, 180)
+  const shipmentGap = isPrMissRange(range) ? -3.4 : jitterValue(18.5, range, PR, 'pr.ship.gap', 30, -40, 90)
+  const shipmentLegendPct = 100 + shipmentGap
 
   const prodKpis3a = [
     {

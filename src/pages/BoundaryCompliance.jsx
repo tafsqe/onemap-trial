@@ -23,7 +23,7 @@ export default function BoundaryCompliance() {
   // Compliance % is now a plain count (compliant/total), so it can land
   // anywhere 0-100 — the chart's floor has to track that instead of
   // assuming values always sit in the low-90s.
-  const trendMin = Math.max(0, Math.floor(Math.min(...trend.map((t) => t.Actual)) / 5) * 5 - 5)
+  const trendMin = Math.max(0, Math.floor(Math.min(...trend.map((t) => t.Aktual)) / 5) * 5 - 5)
 
   return (
     <PageShell active="Peta Boundary">

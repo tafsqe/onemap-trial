@@ -37,12 +37,12 @@ export default function Production() {
         <span className="h-5.5 w-px bg-neutral-200" />
         <span className="text-sm font-bold text-neutral-950">Production</span>
         <span className="h-5.5 w-px bg-neutral-200" />
-        <span className="inline-flex cursor-pointer items-center gap-2 rounded-full border border-neutral-300 px-3.5 py-1.5 text-sm text-neutral-600 hover:border-primary-600 hover:text-primary-600">
+        <span className="inline-flex cursor-pointer items-center gap-2 rounded-lg border border-neutral-300 px-3.5 py-1.5 text-sm text-neutral-600 hover:border-primary-600 hover:text-primary-600">
           <i className="far fa-map-marker-alt" />
           Semua Site
           <i className="far fa-chevron-down text-xs text-neutral-400" />
         </span>
-        <span className="inline-flex cursor-pointer items-center gap-2 rounded-full border border-neutral-300 px-3.5 py-1.5 text-sm text-neutral-600 hover:border-primary-600 hover:text-primary-600">
+        <span className="inline-flex cursor-pointer items-center gap-2 rounded-lg border border-neutral-300 px-3.5 py-1.5 text-sm text-neutral-600 hover:border-primary-600 hover:text-primary-600">
           Semua kontraktor
           <i className="far fa-chevron-down text-xs text-neutral-400" />
         </span>
@@ -50,7 +50,7 @@ export default function Production() {
           <select
             value={plan}
             onChange={(e) => setPlan(e.target.value)}
-            className="appearance-none rounded-full border border-neutral-300 bg-white py-1.5 pr-8 pl-3.5 text-sm text-neutral-600 hover:border-primary-600 hover:text-primary-600"
+            className="appearance-none rounded-lg border border-neutral-300 bg-white py-1.5 pr-8 pl-3.5 text-sm text-neutral-600 hover:border-primary-600 hover:text-primary-600"
           >
             {prodPlanOptions.map((p) => (
               <option key={p} value={p}>

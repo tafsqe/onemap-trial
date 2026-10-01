@@ -5,7 +5,6 @@ import PageShell from '../components/PageShell.jsx'
 import CategoryBar from '../components/CategoryBar.jsx'
 import AchievementBar from '../components/AchievementBar.jsx'
 import { ComboChart } from '../lib/ds.js'
-import { toneStandard } from '../lib/rangeSim.js'
 import { OB_BASELINE_RANGE, buildObDistanceData, obBarCats, obLineCats, obBarColors, obLineColors, obTrendYears, meterFmt, bcmFmt, pctWholeFmt } from '../data/dummy.js'
 
 function KpiCard({ k }) {
@@ -58,7 +57,6 @@ function TrendChart({ title, unitLabel, data, valueFormatter, barMaxValue, trend
             barCategories={obBarCats}
             lineCategories={obLineCats}
             barColors={obBarColors}
-            barColorFn={(key, row) => (key === 'Aktual' && row.Achievement != null ? toneStandard(row.Achievement) : undefined)}
             lineColors={obLineColors}
             valueFormatter={valueFormatter}
             lineValueFormatter={pctWholeFmt}

@@ -105,12 +105,30 @@ export default function Production() {
                 ))}
               </select>
               <span className="text-xs text-neutral-500">Semua angka dalam Ton</span>
-              {planUnavailable && (
-                <span className="text-xs text-neutral-400">Target & Achievement: Tidak tersedia untuk Plan {plan}</span>
-              )}
             </div>
           </div>
           <div className="flex flex-col gap-3 p-6 pt-4">
+            <div className="flex flex-wrap items-center gap-4 pl-18" style={{ color: 'var(--hz-text-secondary, #505D6E)' }}>
+              <span className="flex items-center gap-1.5 text-xs">
+                <span className="inline-block h-2 w-2 rounded-sm" style={{ background: '#006CEB' }} />
+                Actual
+                {planUnavailable && (
+                  <span className="ml-1.5 text-neutral-400">— Target & Achievement: Tidak tersedia untuk Plan {plan}</span>
+                )}
+              </span>
+              {!planUnavailable && (
+                <>
+                  <span className="flex items-center gap-1.5 text-xs">
+                    <span className="inline-block h-2 w-2 rounded-sm" style={{ background: '#8490A1' }} />
+                    Target
+                  </span>
+                  <span className="flex items-center gap-1.5 text-xs">
+                    <span className="inline-block h-0.5 w-3.5 rounded" style={{ background: '#E45A18' }} />
+                    Achievement
+                  </span>
+                </>
+              )}
+            </div>
             {ComboChart && (
               <ComboChart
                 data={prodSeries}
@@ -122,6 +140,7 @@ export default function Production() {
                 valueFormatter={tonNumFmt}
                 lineValueFormatter={pctWholeFmt}
                 barMaxValue={40000}
+                showLegend={false}
                 yAxisWidth={72}
                 height={268}
               />

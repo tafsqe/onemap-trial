@@ -69,13 +69,13 @@ export function buildReadyCards(range) {
 
   const belowTarget = range.end === OVERVIEW_BELOW_TARGET_DATE
   const prValue = belowTarget ? 82.4 : jitterValue(120.1, range, OV, 'ov.pr.value', 8, 60, 180)
-  const prGap = belowTarget ? prValue - 100 : jitterValue(20.1, range, OV, 'ov.pr.gap', 6, -40, 80)
+  const prGap = prValue - 100
   const prTotalTon = scaleValue(28715827, range, OV, 'ov.pr.total')
   const coalGetting = scaleValue(14078479, range, OV, 'ov.pr.coal')
   const shipment = scaleValue(14078479, range, OV, 'ov.pr.ship')
 
   const obValue = belowTarget ? 74.6 : jitterValue(87.2, range, OV, 'ov.ob.value', 5, 40, 100)
-  const obGap = belowTarget ? obValue - 100 : jitterValue(2.2, range, OV, 'ov.ob.gap', 2, -20, 20)
+  const obGap = obValue - 100
   const targetM = scaleValue(2994.15, range, OV, 'ov.ob.target', 0.03)
   const aktualM = (obValue / 100) * targetM
 

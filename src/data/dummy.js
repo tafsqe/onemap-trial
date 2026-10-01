@@ -311,7 +311,7 @@ const prodRowsMeta = [
 
 export const prodTrendYears = [2024, 2025, 2026]
 
-export const prodPlanOptions = ['Semua', 'Budget', 'Commitment', 'RKAB', 'R3MMP', 'Improvement']
+export const prodPlanOptions = ['Budget', 'Commitment', 'RKAB', 'R3MMP', 'Improvement']
 
 export function buildProductionData(range, trendYear = 2026) {
   const dayRatio = rangeDays(range) / rangeDays(PR)

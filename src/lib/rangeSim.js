@@ -84,12 +84,12 @@ export function anchorSeries(baseShape, endValue, range, key, volatility = 0.06)
   })
 }
 
-export const fmt0 = (n) => Math.round(n).toLocaleString('en-US')
-export const fmt1 = (n) => n.toLocaleString('en-US', { minimumFractionDigits: 1, maximumFractionDigits: 1 })
-export const fmt2 = (n) => n.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+// Indonesian-style grouping: dot thousands separator, comma decimal separator.
+export const fmt0 = (n) => Math.round(n).toLocaleString('de-DE')
+export const fmt1 = (n) => n.toLocaleString('de-DE', { minimumFractionDigits: 1, maximumFractionDigits: 1 })
+export const fmt2 = (n) => n.toLocaleString('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
 export const fmtSigned1 = (n) => `${n >= 0 ? '+' : '−'}${fmt1(Math.abs(n))}%`
-// Indonesian-style grouping (dot thousands) for the boundary matrix's Ha figures.
-export const fmtHa0 = (n) => Math.round(n).toLocaleString('de-DE')
+export const fmtHa0 = fmt0
 
 export function toneStandard(ach) {
   if (ach < 50) return 'var(--hz-red-500)'

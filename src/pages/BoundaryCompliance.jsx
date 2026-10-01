@@ -163,7 +163,7 @@ export default function BoundaryCompliance() {
           <div className="flex items-center justify-between border-b border-neutral-200 p-6">
             <div className="flex items-center gap-2.5">
               <i className="fas fa-map-marker-alt text-base text-neutral-950" />
-              <div className="text-lg font-bold tracking-tight text-neutral-950">Outside Boundary by Site</div>
+              <div className="text-lg font-bold tracking-tight text-neutral-950">Area Kerja di luar Boundary Administratif</div>
             </div>
             <span className="text-xs text-neutral-500">Semua angka dalam Ha</span>
           </div>

@@ -22,7 +22,7 @@ export default function Production() {
   const navigate = useNavigate()
   const [range, setRange] = useState(PRODUCTION_BASELINE_RANGE)
   const [trendYear, setTrendYear] = useState(2026)
-  const [plan, setPlan] = useState('Semua')
+  const [plan, setPlan] = useState('R3MMP')
   const { prodKpis3a, prodSeries, prodRows } = useMemo(() => buildProductionData(range, trendYear), [range, trendYear])
 
   return (

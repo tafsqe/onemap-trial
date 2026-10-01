@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import DashboardTabs from '../components/DashboardTabs.jsx'
-import DateRangePicker from '../components/DateRangePicker.jsx'
+import SingleDatePicker from '../components/SingleDatePicker.jsx'
 import PageShell from '../components/PageShell.jsx'
 import CategoryBar from '../components/CategoryBar.jsx'
 import GapChip from '../components/GapChip.jsx'
@@ -11,7 +11,8 @@ import { OVERVIEW_BASELINE_RANGE, buildReadyCards, pendingCards, boundary, mapRo
 export default function Overview() {
   const navigate = useNavigate()
   const [expanded, setExpanded] = useState({})
-  const [range, setRange] = useState(OVERVIEW_BASELINE_RANGE)
+  const [asOfDate, setAsOfDate] = useState(OVERVIEW_BASELINE_RANGE.end)
+  const range = useMemo(() => ({ start: OVERVIEW_BASELINE_RANGE.start, end: asOfDate }), [asOfDate])
   const readyCards = useMemo(() => buildReadyCards(range), [range])
 
   const toggleFacts = (e, id) => {
@@ -25,7 +26,7 @@ export default function Overview() {
         <div className="flex h-14 items-center gap-3 px-5">
           <span className="text-base font-bold text-neutral-950">Dashboard</span>
           <span className="flex-1" />
-          <DateRangePicker value={range} onChange={setRange} />
+          <SingleDatePicker value={asOfDate} onChange={setAsOfDate} />
         </div>
         <DashboardTabs />
       </div>
@@ -90,7 +91,11 @@ export default function Overview() {
                       <span className="text-xs font-bold text-neutral-700">Rincian</span>
                       <i className={`far ${factsOpen ? 'fa-chevron-up' : 'fa-chevron-down'} text-xs text-neutral-500`} />
                     </div>
+                    {factsOpen && c.factsMessage && (
+                      <div className="border-t border-neutral-200 px-3.5 py-2.75 text-[12.5px] text-neutral-600">{c.factsMessage}</div>
+                    )}
                     {factsOpen &&
+                      !c.factsMessage &&
                       c.facts.map((ft, i) => (
                         <div key={i} className="flex items-baseline justify-between gap-3 border-t border-neutral-200 px-3.5 py-2.75">
                           <span className="text-[12.5px] font-semibold text-neutral-700">{ft.label}</span>

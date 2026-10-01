@@ -99,11 +99,14 @@ export function buildReadyCards(range) {
       gapIcon: bcGap >= 0 ? 'fa-check' : 'fa-chart-line-down',
       gapColor: bcGap >= 0 ? 'var(--hz-green-700)' : 'var(--hz-red-700)',
       gapBg: bcGap >= 0 ? 'var(--hz-green-50)' : 'var(--hz-red-50)',
-      facts: [
-        { label: 'IUPK', value: `${fmt0(iupkHa)} Ha`, note: 'di luar batas' },
-        { label: 'AMDAL', value: `${fmt0(amdalHa)} Ha`, note: 'di luar batas' },
-        { label: '', value: `+${boundaryLain}`, note: 'Boundary Lain' },
-      ],
+      facts: violationsActive
+        ? [
+            { label: 'IUPK', value: `${fmt0(iupkHa)} Ha`, note: 'di luar batas' },
+            { label: 'AMDAL', value: `${fmt0(amdalHa)} Ha`, note: 'di luar batas' },
+            { label: '', value: `+${boundaryLain}`, note: 'Boundary Lain' },
+          ]
+        : [],
+      factsMessage: violationsActive ? null : 'Area Kerja mematuhi seluruh boundary administratif.',
     },
     {
       id: 'pr',

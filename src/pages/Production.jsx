@@ -37,24 +37,29 @@ export default function Production() {
         <span className="h-5.5 w-px bg-neutral-200" />
         <span className="text-sm font-bold text-neutral-950">Production</span>
         <span className="h-5.5 w-px bg-neutral-200" />
-        <span className="inline-flex cursor-pointer items-center gap-1 rounded-lg border border-neutral-300 px-3 py-0.5 text-sm text-neutral-600 hover:border-primary-600 hover:text-primary-600">
-          <i className="far fa-map-marker-alt mr-1.75" />
+        <span className="inline-flex cursor-pointer items-center gap-2 rounded-full border border-neutral-300 px-3.5 py-1.5 text-sm text-neutral-600 hover:border-primary-600 hover:text-primary-600">
+          <i className="far fa-map-marker-alt" />
           Semua Site
+          <i className="far fa-chevron-down text-xs text-neutral-400" />
         </span>
-        <span className="inline-flex cursor-pointer items-center gap-1 rounded-lg border border-neutral-300 px-3 py-0.5 text-sm text-neutral-600 hover:border-primary-600 hover:text-primary-600">
+        <span className="inline-flex cursor-pointer items-center gap-2 rounded-full border border-neutral-300 px-3.5 py-1.5 text-sm text-neutral-600 hover:border-primary-600 hover:text-primary-600">
           Semua kontraktor
+          <i className="far fa-chevron-down text-xs text-neutral-400" />
         </span>
-        <select
-          value={plan}
-          onChange={(e) => setPlan(e.target.value)}
-          className="rounded-lg border border-neutral-300 bg-white px-3 py-0.5 text-sm text-neutral-600 hover:border-primary-600 hover:text-primary-600"
-        >
-          {prodPlanOptions.map((p) => (
-            <option key={p} value={p}>
-              {p}
-            </option>
-          ))}
-        </select>
+        <div className="relative inline-flex items-center">
+          <select
+            value={plan}
+            onChange={(e) => setPlan(e.target.value)}
+            className="appearance-none rounded-full border border-neutral-300 bg-white py-1.5 pr-8 pl-3.5 text-sm text-neutral-600 hover:border-primary-600 hover:text-primary-600"
+          >
+            {prodPlanOptions.map((p) => (
+              <option key={p} value={p}>
+                {p}
+              </option>
+            ))}
+          </select>
+          <i className="far fa-chevron-down pointer-events-none absolute right-3 text-xs text-neutral-400" />
+        </div>
         <span className="flex-1" />
         <DateRangePicker value={range} onChange={setRange} width={130} />
       </div>

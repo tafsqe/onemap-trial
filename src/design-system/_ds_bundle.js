@@ -1036,6 +1036,7 @@ function ComboChart({
   showLegend = true,
   showGridLines = true,
   barMaxValue,
+  lineMaxValue,
   yAxisWidth = 56,
   rightAxisWidth = 48,
   className = '',
@@ -1079,7 +1080,7 @@ function ComboChart({
   const rMax = Math.max(0, ...data.map(r => Math.max(...lineCategories.map(c => Number(r[c]) || 0))));
   const rMin = Math.min(0, ...data.map(r => Math.min(...lineCategories.map(c => Number(r[c]) || 0))));
   const ltk = barMaxValue ? hzFixedTicks(barMaxValue) : hzTicks(0, lMax, 4),
-    rtk = hzTicks(rMin, rMax, 4);
+    rtk = lineMaxValue ? [0, 1, 2, 3, 4].map(i => lineMaxValue * i / 4) : hzTicks(rMin, rMax, 4);
   const lTop = ltk[ltk.length - 1],
     rTop = rtk[rtk.length - 1],
     rBot = rtk[0];

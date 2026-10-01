@@ -19,7 +19,7 @@ export default function Production() {
   const [range, setRange] = useState(PRODUCTION_BASELINE_RANGE)
   const [trendYear, setTrendYear] = useState(2026)
   const [plan, setPlan] = useState('R3MMP')
-  const { prodKpis3a, prodSeries, prodRows, prodBarCats, prodLineCats, prodColors, prodLineColors, planUnavailable } = useMemo(
+  const { prodKpis3a, prodSeries, prodRows, prodBarCats, prodLineCats, prodColors, prodLineColors, prodAxisLeftMax, prodAxisRightMax, planUnavailable } = useMemo(
     () => buildProductionData(range, trendYear, plan),
     [range, trendYear, plan],
   )
@@ -144,7 +144,8 @@ export default function Production() {
                 lineColors={prodLineColors}
                 valueFormatter={tonNumFmt}
                 lineValueFormatter={pctWholeFmt}
-                barMaxValue={40000}
+                barMaxValue={planUnavailable ? 40000 : prodAxisLeftMax}
+                lineMaxValue={planUnavailable ? undefined : prodAxisRightMax}
                 showLegend={false}
                 yAxisWidth={72}
                 height={268}

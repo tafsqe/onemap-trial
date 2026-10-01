@@ -339,24 +339,40 @@ export const prodPlanOptions = ['Budget', 'Commitment', 'RKAB', 'R3MMP', 'Improv
 // production is always measured independently of plan, so only target-
 // relative figures (gap chips, achievement bars, chart target/achievement
 // series) fall back to "Tidak tersedia" — the actual values stay real.
-// Demo case: this range always shows both KPI cards below target.
-const PR_MISS_RANGE = { start: '2026-08-15', end: '2026-08-31' }
-const isPrMissRange = (r) => r.start === PR_MISS_RANGE.start && r.end === PR_MISS_RANGE.end
-// Monthly achievement (as a share of target) used by the chart in that range
-// — sits 20-30% below target all year (avg ~76%, matching the KPI gaps).
-const PR_MISS_ROW_ACH = { LMO: 72.5, SMO: 78.0, GMO: 74.2, BMO1: 80.1, BMO2: 73.6, BMO3: 68.9 }
-const PR_MISS_ACH = [0.76, 0.74, 0.78, 0.75, 0.72, 0.77, 0.79, 0.75, 0.73, 0.78, 0.76, 0.74]
+// Demo cases: these ranges always show both KPI cards below target. Each
+// case carries its own KPI gaps, monthly achievement (share of target) for
+// the chart, and per-site achievement for the table, so all three agree.
+const PR_MISS_CASES = [
+  {
+    // 20-30% below target.
+    range: { start: '2026-08-15', end: '2026-08-31' },
+    coalGap: -24.6,
+    shipmentGap: -21.8,
+    monthlyAch: [0.76, 0.74, 0.78, 0.75, 0.72, 0.77, 0.79, 0.75, 0.73, 0.78, 0.76, 0.74],
+    rowAch: { LMO: 72.5, SMO: 78.0, GMO: 74.2, BMO1: 80.1, BMO2: 73.6, BMO3: 68.9 },
+  },
+  {
+    // Extreme: about half of target (KPI bars sit at ~50%).
+    range: { start: '2026-08-01', end: '2026-08-14' },
+    coalGap: -50.2,
+    shipmentGap: -47.6,
+    monthlyAch: [0.5, 0.47, 0.52, 0.49, 0.46, 0.51, 0.53, 0.48, 0.47, 0.52, 0.5, 0.48],
+    rowAch: { LMO: 48.5, SMO: 54.0, GMO: 49.2, BMO1: 56.1, BMO2: 47.6, BMO3: 38.9 },
+  },
+]
+const prMissCase = (r) => PR_MISS_CASES.find((c) => c.range.start === r.start && c.range.end === r.end)
 
 export function buildProductionData(range, trendYear = 2026, plan = 'R3MMP') {
   const dayRatio = rangeDays(range) / rangeDays(PR)
   const planUnavailable = plan === 'Budget'
+  const missCase = prMissCase(range)
 
   const coalValue = scaleValue(14078479, range, PR, 'pr.coal')
-  const coalGap = isPrMissRange(range) ? -24.6 : jitterValue(23.2, range, PR, 'pr.coal.gap', 30, -40, 90)
+  const coalGap = missCase ? missCase.coalGap : jitterValue(23.2, range, PR, 'pr.coal.gap', 30, -40, 90)
   const coalLegendPct = 100 + coalGap
 
   const shipmentValue = scaleValue(14078479, range, PR, 'pr.ship')
-  const shipmentGap = isPrMissRange(range) ? -21.8 : jitterValue(18.5, range, PR, 'pr.ship.gap', 30, -40, 90)
+  const shipmentGap = missCase ? missCase.shipmentGap : jitterValue(18.5, range, PR, 'pr.ship.gap', 30, -40, 90)
   const shipmentLegendPct = 100 + shipmentGap
 
   const prodKpis3a = [
@@ -368,7 +384,7 @@ export function buildProductionData(range, trendYear = 2026, plan = 'R3MMP') {
       cls: planUnavailable ? CHIP_NEUTRAL : coalGap >= 0 ? CHIP_SUCCESS : CHIP_DANGER,
       valColor: 'var(--hz-text-primary)',
       noTarget: planUnavailable,
-      barW: '100%',
+      barW: pctCss(Math.min(100, Math.max(0, coalLegendPct))),
       legend: [
         { text: `Aktual ${fmt1(coalLegendPct)}%`, color: '#006CEB' },
         { text: 'Target 100%', color: '#8490A1' },
@@ -383,7 +399,7 @@ export function buildProductionData(range, trendYear = 2026, plan = 'R3MMP') {
       cls: planUnavailable ? CHIP_NEUTRAL : shipmentGap >= 0 ? CHIP_SUCCESS : CHIP_DANGER,
       valColor: 'var(--hz-text-primary)',
       noTarget: planUnavailable,
-      barW: '100%',
+      barW: pctCss(Math.min(100, Math.max(0, shipmentLegendPct))),
       legend: [
         { text: `Aktual ${fmt1(shipmentLegendPct)}%`, color: '#006CEB' },
         { text: 'Target 100%', color: '#8490A1' },
@@ -407,14 +423,21 @@ export function buildProductionData(range, trendYear = 2026, plan = 'R3MMP') {
   // picking another year always reseeds via anchorSeries so the chart
   // actually changes even when the top date range is still the baseline.
   const endValue = prodActualBase[prodActualBase.length - 1] * dayRatio
-  const targetSeries = prodMonths.map(() => 20000 * dayRatio)
-  const actualSeries = isPrMissRange(range)
-    ? targetSeries.map((t, i) => t * PR_MISS_ACH[i])
+  // Rounded so the shared left/right axis ticks land on readable numbers.
+  const targetKt = Math.round((20000 * dayRatio) / 100) * 100
+  const targetSeries = prodMonths.map(() => targetKt)
+  const actualSeries = missCase
+    ? targetSeries.map((t, i) => t * missCase.monthlyAch[i])
     : trendYear === 2026
       ? buildSeries(prodActualBase, endValue, range, PR, 'pr.chart.actual')
       : anchorSeries(prodActualBase, endValue, range, `pr.chart.actual.${trendYear}`)
   const achievementSeries = actualSeries.map((a, i) => (a / targetSeries[i]) * 100)
   const prodSeries = prodMonths.map((day, i) => ({ day, Aktual: actualSeries[i], Target: targetSeries[i], Achievement: achievementSeries[i] }))
+  // Both axes share one scale: 100% on the right axis sits exactly at the
+  // Target bar's top, so each Achievement point lands on its Aktual bar top.
+  const maxAch = Math.max(...achievementSeries)
+  const prodAxisRightMax = Math.max(120, Math.ceil(maxAch / 40) * 40)
+  const prodAxisLeftMax = (prodAxisRightMax / 100) * targetKt
   const prodBarCats = planUnavailable ? ['Aktual'] : ['Aktual', 'Target']
   const prodLineCats = planUnavailable ? [] : ['Achievement']
   const prodColors = planUnavailable ? ['blue'] : ['blue', 'neutral']
@@ -422,8 +445,7 @@ export function buildProductionData(range, trendYear = 2026, plan = 'R3MMP') {
 
   const prodRows = prodRowsMeta.map((r) => {
     const targetTon = scaleValue(r.basePlan, range, PR, `pr.row.${r.pit}.plan`)
-    const missCase = isPrMissRange(range)
-    const ach = missCase ? PR_MISS_ROW_ACH[r.pit] : jitterValue(r.baseAch, range, PR, `pr.row.${r.pit}.ach`, 6, 10, 180)
+    const ach = missCase ? missCase.rowAch[r.pit] : jitterValue(r.baseAch, range, PR, `pr.row.${r.pit}.ach`, 6, 10, 180)
     const actual = missCase ? (targetTon * ach) / 100 : scaleValue(r.baseActual, range, PR, `pr.row.${r.pit}.actual`)
     return {
       pit: r.pit,
@@ -436,7 +458,7 @@ export function buildProductionData(range, trendYear = 2026, plan = 'R3MMP') {
     }
   })
 
-  return { prodKpis3a, prodSeries, prodRows, prodBarCats, prodLineCats, prodColors, prodLineColors, planUnavailable }
+  return { prodKpis3a, prodSeries, prodRows, prodBarCats, prodLineCats, prodColors, prodLineColors, prodAxisLeftMax, prodAxisRightMax, planUnavailable }
 }
 
 // ---------------------------------------------------------------------------

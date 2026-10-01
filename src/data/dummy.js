@@ -339,25 +339,33 @@ export const prodPlanOptions = ['Budget', 'Commitment', 'RKAB', 'R3MMP', 'Improv
 // production is always measured independently of plan, so only target-
 // relative figures (gap chips, achievement bars, chart target/achievement
 // series) fall back to "Tidak tersedia" — the actual values stay real.
-// Demo cases: these ranges always show both KPI cards below target. Each
-// case carries its own KPI gaps, monthly achievement (share of target) for
-// the chart, and per-site achievement for the table, so all three agree.
+// Demo cases: these ranges pin both KPI cards (Coal Getting / Shipment) to a
+// fixed Aktual %, and monthlyAch / rowAch drive the chart and the site table
+// so all three agree.
 const PR_MISS_CASES = [
   {
-    // 20-30% below target.
-    range: { start: '2026-08-15', end: '2026-08-31' },
-    coalGap: -24.6,
-    shipmentGap: -21.8,
-    monthlyAch: [0.76, 0.74, 0.78, 0.75, 0.72, 0.77, 0.79, 0.75, 0.73, 0.78, 0.76, 0.74],
-    rowAch: { LMO: 72.5, SMO: 78.0, GMO: 74.2, BMO1: 80.1, BMO2: 73.6, BMO3: 68.9 },
+    // Aktual 40% — extreme miss, KPI bars sit at 40%.
+    range: { start: '2026-08-01', end: '2026-08-15' },
+    coalGap: -60,
+    shipmentGap: -60,
+    monthlyAch: [0.4, 0.37, 0.42, 0.39, 0.36, 0.41, 0.43, 0.38, 0.37, 0.42, 0.4, 0.38],
+    rowAch: { LMO: 38.5, SMO: 44.0, GMO: 39.2, BMO1: 46.1, BMO2: 37.6, BMO3: 28.9 },
   },
   {
-    // Extreme: about half of target (KPI bars sit at ~50%).
-    range: { start: '2026-08-01', end: '2026-08-14' },
-    coalGap: -50.2,
-    shipmentGap: -47.6,
-    monthlyAch: [0.5, 0.47, 0.52, 0.49, 0.46, 0.51, 0.53, 0.48, 0.47, 0.52, 0.5, 0.48],
-    rowAch: { LMO: 48.5, SMO: 54.0, GMO: 49.2, BMO1: 56.1, BMO2: 47.6, BMO3: 38.9 },
+    // Aktual 80% — moderate miss.
+    range: { start: '2026-08-01', end: '2026-08-20' },
+    coalGap: -20,
+    shipmentGap: -20,
+    monthlyAch: [0.8, 0.77, 0.82, 0.79, 0.76, 0.81, 0.83, 0.78, 0.77, 0.82, 0.8, 0.78],
+    rowAch: { LMO: 78.5, SMO: 84.0, GMO: 79.2, BMO1: 86.1, BMO2: 77.6, BMO3: 70.9 },
+  },
+  {
+    // Aktual 131% — target exceeded (the baseline range).
+    range: { start: '2026-08-01', end: '2026-08-31' },
+    coalGap: 31,
+    shipmentGap: 31,
+    monthlyAch: [1.22, 1.26, 1.29, 1.31, 1.34, 1.3, 1.36, 1.33, 1.29, 1.35, 1.32, 1.37],
+    rowAch: { LMO: 124.5, SMO: 136.8, GMO: 129.2, BMO1: 138.1, BMO2: 127.6, BMO3: 118.9 },
   },
 ]
 const prMissCase = (r) => PR_MISS_CASES.find((c) => c.range.start === r.start && c.range.end === r.end)
@@ -426,7 +434,7 @@ export function buildProductionData(range, trendYear = 2026, plan = 'R3MMP') {
   // Rounded so the shared left/right axis ticks land on readable numbers.
   const targetKt = Math.round((20000 * dayRatio) / 100) * 100
   const targetSeries = prodMonths.map(() => targetKt)
-  const actualSeries = missCase
+  const actualSeries = missCase?.monthlyAch
     ? targetSeries.map((t, i) => t * missCase.monthlyAch[i])
     : trendYear === 2026
       ? buildSeries(prodActualBase, endValue, range, PR, 'pr.chart.actual')
@@ -445,8 +453,8 @@ export function buildProductionData(range, trendYear = 2026, plan = 'R3MMP') {
 
   const prodRows = prodRowsMeta.map((r) => {
     const targetTon = scaleValue(r.basePlan, range, PR, `pr.row.${r.pit}.plan`)
-    const ach = missCase ? missCase.rowAch[r.pit] : jitterValue(r.baseAch, range, PR, `pr.row.${r.pit}.ach`, 6, 10, 180)
-    const actual = missCase ? (targetTon * ach) / 100 : scaleValue(r.baseActual, range, PR, `pr.row.${r.pit}.actual`)
+    const ach = missCase?.rowAch ? missCase.rowAch[r.pit] : jitterValue(r.baseAch, range, PR, `pr.row.${r.pit}.ach`, 6, 10, 180)
+    const actual = missCase?.rowAch ? (targetTon * ach) / 100 : scaleValue(r.baseActual, range, PR, `pr.row.${r.pit}.actual`)
     return {
       pit: r.pit,
       plan: planUnavailable ? 'Tidak tersedia' : `${fmt0(targetTon)} ton`,

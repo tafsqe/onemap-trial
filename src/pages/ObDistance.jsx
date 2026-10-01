@@ -116,7 +116,7 @@ export default function ObDistance() {
   const [range, setRange] = useState(OB_BASELINE_RANGE)
   const [distTrendYear, setDistTrendYear] = useState(2026)
   const [volTrendYear, setVolTrendYear] = useState(2026)
-  const { obKpis4b, obSeries, obVolSeries, obDistRows, obVolRows } = useMemo(
+  const { obKpis4b, obSeries, obVolSeries, obDistRows, obVolRows, obDistAxisMax, obVolAxisMax } = useMemo(
     () => buildObDistanceData(range, distTrendYear, volTrendYear),
     [range, distTrendYear, volTrendYear],
   )
@@ -145,7 +145,7 @@ export default function ObDistance() {
             unitLabel="Dalam satuan meter"
             data={obSeries}
             valueFormatter={meterFmt}
-            barMaxValue={4000}
+            barMaxValue={obDistAxisMax}
             trendYear={distTrendYear}
             onTrendYearChange={setDistTrendYear}
           />
@@ -159,7 +159,7 @@ export default function ObDistance() {
             unitLabel="Dalam satuan BCM"
             data={obVolSeries}
             valueFormatter={bcmFmt}
-            barMaxValue={25e6}
+            barMaxValue={obVolAxisMax}
             trendYear={volTrendYear}
             onTrendYearChange={setVolTrendYear}
           />

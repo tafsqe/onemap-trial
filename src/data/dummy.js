@@ -77,9 +77,10 @@ export function buildReadyCards(range) {
   const shipment = prCase ? (prTargetTon(range) * (100 + prCase.shipmentGap)) / 100 : scaleValue(14078479, range, OV, 'ov.pr.ship')
   const prTotalTon = prCase ? coalGetting + shipment : scaleValue(28715827, range, OV, 'ov.pr.total')
 
-  const obValue = belowTarget ? 74.6 : jitterValue(87.2, range, OV, 'ov.ob.value', 22, 50, 125)
+  const obCaseHit = obCase(range)
+  const obValue = obCaseHit ? obCaseHit.pct : belowTarget ? 74.6 : jitterValue(87.2, range, OV, 'ov.ob.value', 22, 50, 125)
   const obGap = obValue - 100
-  const targetM = scaleValue(2994.15, range, OV, 'ov.ob.target', 0.03)
+  const targetM = obCaseHit ? scaleValue(2994.15, range, OB, 'ob.dist.target', 0.03) : scaleValue(2994.15, range, OV, 'ov.ob.target', 0.03)
   const aktualM = (obValue / 100) * targetM
 
   return [
@@ -516,12 +517,48 @@ const obVolRowsMeta = [
 
 export const obTrendYears = [2024, 2025, 2026]
 
+// Demo cases: these ranges pin both OB cards (Distance and Volume) to one
+// Aktual %, with the monthly charts and site tables following the same
+// level (red <50%, blue 50% to <100%, green >=100%). Also shown on the
+// Overview OB card for the same range.
+const OB_CASES = [
+  {
+    // Aktual 40% — red.
+    range: { start: '2026-08-01', end: '2026-08-15' },
+    pct: 40,
+    distMonthly: [40, 37, 42, 39, 36, 41, 43, 38, 37, 42, 40, 38],
+    volMonthly: [38, 36, 41, 40, 35, 39, 42, 37, 36, 41, 39, 37],
+    distRows: { LMO: 38, SMO: 44, GMO: 39, BMO1: 46, BMO2: 37, BMO3: 31 },
+    volRows: { LMO: 36, SMO: 41, GMO: 38, BMO1: 45, BMO2: 35, BMO3: 30 },
+  },
+  {
+    // Aktual 75% — blue.
+    range: { start: '2026-08-01', end: '2026-08-20' },
+    pct: 75,
+    distMonthly: [75, 72, 77, 74, 71, 76, 78, 73, 72, 77, 75, 73],
+    volMonthly: [73, 71, 76, 75, 70, 74, 77, 72, 71, 76, 74, 72],
+    distRows: { LMO: 73, SMO: 79, GMO: 74, BMO1: 81, BMO2: 72, BMO3: 67 },
+    volRows: { LMO: 71, SMO: 78, GMO: 73, BMO1: 80, BMO2: 70, BMO3: 66 },
+  },
+  {
+    // Aktual 130% — green.
+    range: { start: '2026-08-01', end: '2026-08-31' },
+    pct: 130,
+    distMonthly: [122, 126, 129, 131, 134, 130, 136, 133, 129, 135, 132, 137],
+    volMonthly: [124, 127, 129, 132, 133, 129, 135, 134, 128, 134, 131, 136],
+    distRows: { LMO: 124, SMO: 136, GMO: 129, BMO1: 138, BMO2: 127, BMO3: 119 },
+    volRows: { LMO: 125, SMO: 135, GMO: 128, BMO1: 137, BMO2: 126, BMO3: 121 },
+  },
+]
+const obCase = (r) => OB_CASES.find((c) => c.range.start === r.start && c.range.end === r.end)
+
 export function buildObDistanceData(range, distTrendYear = 2026, volTrendYear = 2026) {
-  const distPct = jitterValue(87.2, range, OB, 'ob.dist.pct', 5, 40, 100)
+  const demo = obCase(range)
+  const distPct = demo ? demo.pct : jitterValue(87.2, range, OB, 'ob.dist.pct', 5, 40, 100)
   const targetM = scaleValue(2994.15, range, OB, 'ob.dist.target', 0.03)
   const actualM = (distPct / 100) * targetM
 
-  const volPct = jitterValue(25.2, range, OB, 'ob.vol.pct', 6, 5, 60)
+  const volPct = demo ? demo.pct : jitterValue(25.2, range, OB, 'ob.vol.pct', 6, 5, 60)
   const volTarget = scaleValue(21053228, range, OB, 'ob.vol.target')
   const volActual = (volPct / 100) * volTarget
 
@@ -557,33 +594,49 @@ export function buildObDistanceData(range, distTrendYear = 2026, volTrendYear = 
   // Baseline year (2026) keeps the exact buildSeries baseline-match behavior;
   // picking another year always reseeds via anchorSeries so the chart
   // actually changes even when the top date range is still the baseline.
-  const distAchSeries =
-    distTrendYear === 2026
+  const distAchSeries = demo
+    ? demo.distMonthly
+    : distTrendYear === 2026
       ? buildSeries(obDistAchievementBase, distPct, range, OB, 'ob.dist.chart')
       : anchorSeries(obDistAchievementBase, distPct, range, `ob.dist.chart.${distTrendYear}`)
   const obSeries = obMonths.map((day, i) => ({ day, Aktual: (distAchSeries[i] / 100) * targetM, Target: targetM, Achievement: distAchSeries[i] }))
 
-  const volAchSeries =
-    volTrendYear === 2026
+  const volAchSeries = demo
+    ? demo.volMonthly
+    : volTrendYear === 2026
       ? buildSeries(obVolAchievementBase, volPct, range, OB, 'ob.vol.chart')
       : anchorSeries(obVolAchievementBase, volPct, range, `ob.vol.chart.${volTrendYear}`)
   const obVolSeries = obMonths.map((day, i) => ({ day, Aktual: (volAchSeries[i] / 100) * volTarget, Target: volTarget, Achievement: volAchSeries[i] }))
 
   const obDistRows = obDistRowsMeta.map((r) => {
-    const actual = scaleValue(r.baseActual, range, OB, `ob.dist.row.${r.site}.actual`)
+    let actual = scaleValue(r.baseActual, range, OB, `ob.dist.row.${r.site}.actual`)
     const plan = scaleValue(r.basePlan, range, OB, `ob.dist.row.${r.site}.plan`)
-    const ach = jitterValue(r.baseAch, range, OB, `ob.dist.row.${r.site}.ach`, 5, 40, 100)
+    const ach = demo ? demo.distRows[r.site] : jitterValue(r.baseAch, range, OB, `ob.dist.row.${r.site}.ach`, 5, 40, 100)
+    if (demo) actual = (plan * ach) / 100
     return { site: r.site, actual: fmt0(actual), plan: fmt2(plan), ach: `${fmt0(ach)}%`, bar: pctCss(Math.min(ach, 100), 0), tone: toneStandard(ach) }
   })
 
   const obVolRows = obVolRowsMeta.map((r) => {
-    const actual = scaleValue(r.baseActual, range, OB, `ob.vol.row.${r.site}.actual`)
+    let actual = scaleValue(r.baseActual, range, OB, `ob.vol.row.${r.site}.actual`)
     const plan = scaleValue(r.basePlan, range, OB, `ob.vol.row.${r.site}.plan`)
-    const ach = jitterValue(r.baseAch, range, OB, `ob.vol.row.${r.site}.ach`, 4, 1, 60)
+    const ach = demo ? demo.volRows[r.site] : jitterValue(r.baseAch, range, OB, `ob.vol.row.${r.site}.ach`, 4, 1, 60)
+    if (demo) actual = (plan * ach) / 100
     return { site: r.site, actual: fmt0(actual), plan: fmt0(plan), ach: `${fmt0(ach)}%`, bar: pctCss(Math.min(ach, 100), 0), tone: toneStandard(ach) }
   })
 
-  return { obKpis4b, obSeries, obVolSeries, obDistRows, obVolRows }
+  // Fixed axes unless a series outgrows them (long ranges / the 130% case),
+  // then the next round number above the tallest bar.
+  const peak = (rows) => Math.max(...rows.flatMap((x) => [x.Aktual, x.Target]))
+  const axisMax = (rows, base) => {
+    const top = peak(rows) * 1.05
+    if (top <= base) return base
+    const mag = Math.pow(10, Math.floor(Math.log10(top)))
+    return [1, 1.2, 1.5, 2, 2.5, 3, 4, 5, 6, 8, 10].map((k) => k * mag).find((v) => v >= top)
+  }
+  const obDistAxisMax = axisMax(obSeries, 4000)
+  const obVolAxisMax = axisMax(obVolSeries, 25e6)
+
+  return { obKpis4b, obSeries, obVolSeries, obDistRows, obVolRows, obDistAxisMax, obVolAxisMax }
 }
 
 // ---------------------------------------------------------------------------

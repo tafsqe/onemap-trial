@@ -68,11 +68,14 @@ export function buildReadyCards(range) {
   const boundaryLain = violationsActive ? Math.max(0, Math.round(scaleValue(5, range, OV, 'ov.bc.lain'))) : 0
 
   const belowTarget = range.end === OVERVIEW_BELOW_TARGET_DATE
-  const prValue = belowTarget ? 82.4 : jitterValue(120.1, range, OV, 'ov.pr.value', 30, 60, 160)
+  // Picking one of the Production demo ranges here shows the same Aktual %
+  // and tonnage as the Production detail page for that range.
+  const prCase = prMissCase(range)
+  const prValue = prCase ? 100 + prCase.coalGap : belowTarget ? 82.4 : jitterValue(120.1, range, OV, 'ov.pr.value', 30, 60, 160)
   const prGap = prValue - 100
-  const prTotalTon = scaleValue(28715827, range, OV, 'ov.pr.total')
-  const coalGetting = scaleValue(14078479, range, OV, 'ov.pr.coal')
-  const shipment = scaleValue(14078479, range, OV, 'ov.pr.ship')
+  const coalGetting = prCase ? (prTargetTon(range) * (100 + prCase.coalGap)) / 100 : scaleValue(14078479, range, OV, 'ov.pr.coal')
+  const shipment = prCase ? (prTargetTon(range) * (100 + prCase.shipmentGap)) / 100 : scaleValue(14078479, range, OV, 'ov.pr.ship')
+  const prTotalTon = prCase ? coalGetting + shipment : scaleValue(28715827, range, OV, 'ov.pr.total')
 
   const obValue = belowTarget ? 74.6 : jitterValue(87.2, range, OV, 'ov.ob.value', 22, 50, 125)
   const obGap = obValue - 100
@@ -368,6 +371,9 @@ const PR_MISS_CASES = [
     rowAch: { LMO: 124.5, SMO: 136.8, GMO: 129.2, BMO1: 138.1, BMO2: 127.6, BMO3: 118.9 },
   },
 ]
+// Total target tonnage across all sites for a range — the same figure the
+// site table sums to, so cards, table and the Overview card agree in a case.
+const prTargetTon = (r) => prodRowsMeta.reduce((sum, row) => sum + scaleValue(row.basePlan, r, PR, `pr.row.${row.pit}.plan`), 0)
 const prMissCase = (r) => PR_MISS_CASES.find((c) => c.range.start === r.start && c.range.end === r.end)
 
 export function buildProductionData(range, trendYear = 2026, plan = 'R3MMP') {
@@ -375,11 +381,11 @@ export function buildProductionData(range, trendYear = 2026, plan = 'R3MMP') {
   const planUnavailable = plan === 'Budget'
   const missCase = prMissCase(range)
 
-  const coalValue = scaleValue(14078479, range, PR, 'pr.coal')
+  const coalValue = missCase ? (prTargetTon(range) * (100 + missCase.coalGap)) / 100 : scaleValue(14078479, range, PR, 'pr.coal')
   const coalGap = missCase ? missCase.coalGap : jitterValue(23.2, range, PR, 'pr.coal.gap', 30, -40, 90)
   const coalLegendPct = 100 + coalGap
 
-  const shipmentValue = scaleValue(14078479, range, PR, 'pr.ship')
+  const shipmentValue = missCase ? (prTargetTon(range) * (100 + missCase.shipmentGap)) / 100 : scaleValue(14078479, range, PR, 'pr.ship')
   const shipmentGap = missCase ? missCase.shipmentGap : jitterValue(18.5, range, PR, 'pr.ship.gap', 30, -40, 90)
   const shipmentLegendPct = 100 + shipmentGap
 
@@ -451,9 +457,14 @@ export function buildProductionData(range, trendYear = 2026, plan = 'R3MMP') {
   const prodColors = planUnavailable ? ['blue'] : ['blue', 'neutral']
   const prodLineColors = planUnavailable ? [] : ['orange']
 
+  // In a demo case the per-site achievements are normalised so the table's
+  // Aktual column sums to the Coal Getting card exactly.
+  const rowAchScale = missCase?.rowAch
+    ? coalValue / prodRowsMeta.reduce((sum, r) => sum + (scaleValue(r.basePlan, range, PR, `pr.row.${r.pit}.plan`) * missCase.rowAch[r.pit]) / 100, 0)
+    : 1
   const prodRows = prodRowsMeta.map((r) => {
     const targetTon = scaleValue(r.basePlan, range, PR, `pr.row.${r.pit}.plan`)
-    const ach = missCase?.rowAch ? missCase.rowAch[r.pit] : jitterValue(r.baseAch, range, PR, `pr.row.${r.pit}.ach`, 6, 10, 180)
+    const ach = missCase?.rowAch ? missCase.rowAch[r.pit] * rowAchScale : jitterValue(r.baseAch, range, PR, `pr.row.${r.pit}.ach`, 6, 10, 180)
     const actual = missCase?.rowAch ? (targetTon * ach) / 100 : scaleValue(r.baseActual, range, PR, `pr.row.${r.pit}.actual`)
     return {
       pit: r.pit,

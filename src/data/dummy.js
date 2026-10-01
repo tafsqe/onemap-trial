@@ -53,6 +53,10 @@ function bcComplianceFor(endDate) {
 export const OVERVIEW_BASELINE_RANGE = { start: '2026-08-15', end: '2026-09-14' }
 const OV = OVERVIEW_BASELINE_RANGE
 
+// Demo date: picking it on the landing page puts every card below target
+// (Boundary 71.4%, Production 82.4%, OB Distance 74.6%) so all gap chips go red.
+export const OVERVIEW_BELOW_TARGET_DATE = '2026-09-30'
+
 export function buildReadyCards(range) {
   // Same compliance formula as the Boundary Compliance detail page (compliant
   // / total regulations) — no independent simulation, so the two pages never
@@ -63,14 +67,15 @@ export function buildReadyCards(range) {
   const amdalHa = violationsActive ? scaleValue(50, range, OV, 'ov.bc.amdal') : 0
   const boundaryLain = violationsActive ? Math.max(0, Math.round(scaleValue(5, range, OV, 'ov.bc.lain'))) : 0
 
-  const prValue = jitterValue(120.1, range, OV, 'ov.pr.value', 8, 60, 180)
-  const prGap = jitterValue(20.1, range, OV, 'ov.pr.gap', 6, -40, 80)
+  const belowTarget = range.end === OVERVIEW_BELOW_TARGET_DATE
+  const prValue = belowTarget ? 82.4 : jitterValue(120.1, range, OV, 'ov.pr.value', 8, 60, 180)
+  const prGap = belowTarget ? prValue - 100 : jitterValue(20.1, range, OV, 'ov.pr.gap', 6, -40, 80)
   const prTotalTon = scaleValue(28715827, range, OV, 'ov.pr.total')
   const coalGetting = scaleValue(14078479, range, OV, 'ov.pr.coal')
   const shipment = scaleValue(14078479, range, OV, 'ov.pr.ship')
 
-  const obValue = jitterValue(87.2, range, OV, 'ov.ob.value', 5, 40, 100)
-  const obGap = jitterValue(2.2, range, OV, 'ov.ob.gap', 2, -20, 20)
+  const obValue = belowTarget ? 74.6 : jitterValue(87.2, range, OV, 'ov.ob.value', 5, 40, 100)
+  const obGap = belowTarget ? obValue - 100 : jitterValue(2.2, range, OV, 'ov.ob.gap', 2, -20, 20)
   const targetM = scaleValue(2994.15, range, OV, 'ov.ob.target', 0.03)
   const aktualM = (obValue / 100) * targetM
 
@@ -116,7 +121,7 @@ export function buildReadyCards(range) {
       value: fmt1(prValue),
       unit: 'Actual',
       target: '/production',
-      catValues: [100, 0],
+      catValues: [Math.min(100, prValue), Math.max(0, 100 - prValue)],
       catLabels: [{ text: `Actual ${fmt0(prTotalTon)} ton`, color: '#006CEB' }],
       remainderColor: '#EEF0F5',
       iconBg: 'var(--hz-azure-50)',
@@ -124,9 +129,9 @@ export function buildReadyCards(range) {
       targetLabel: 'Target',
       targetVal: '100%',
       gapTxt: fmtSigned1(prGap),
-      gapIcon: 'fa-chart-line',
-      gapColor: 'var(--hz-green-700)',
-      gapBg: 'var(--hz-green-50)',
+      gapIcon: prGap >= 0 ? 'fa-chart-line' : 'fa-chart-line-down',
+      gapColor: prGap >= 0 ? 'var(--hz-green-700)' : 'var(--hz-red-700)',
+      gapBg: prGap >= 0 ? 'var(--hz-green-50)' : 'var(--hz-red-50)',
       facts: [
         { label: 'Coal Getting', value: `${fmt0(coalGetting)} Ton`, note: '' },
         { label: 'Shipment', value: `${fmt0(shipment)} Ton`, note: '' },
@@ -149,9 +154,9 @@ export function buildReadyCards(range) {
       targetLabel: 'Target',
       targetVal: '100%',
       gapTxt: fmtSigned1(obGap),
-      gapIcon: 'fa-chart-line',
-      gapColor: 'var(--hz-green-700)',
-      gapBg: 'var(--hz-green-50)',
+      gapIcon: obGap >= 0 ? 'fa-chart-line' : 'fa-chart-line-down',
+      gapColor: obGap >= 0 ? 'var(--hz-green-700)' : 'var(--hz-red-700)',
+      gapBg: obGap >= 0 ? 'var(--hz-green-50)' : 'var(--hz-red-50)',
       facts: [
         { label: 'Aktual', value: `${fmt0(aktualM)} m`, note: '' },
         { label: 'Target', value: `${fmt2(targetM)} m`, note: '' },

@@ -7,7 +7,7 @@
 // from src/lib/rangeSim.js's seeded RNG — same range always reproduces the
 // same numbers, different ranges/fields drift independently.
 
-import { anchorSeries, buildSeries, fmt0, fmt1, fmt2, fmtHa0, fmtSigned1, jitterValue, rangeDays, scaleValue, toneStandard } from '../lib/rangeSim.js'
+import { anchorSeries, buildSeries, fmt0, fmt1, fmt2, fmtHa0, fmtSigned1, jitterValue, pctCss, rangeDays, scaleValue, toneStandard } from '../lib/rangeSim.js'
 
 export const themeCls = 'theme-hz-azure'
 export const basemap = 'satellite'
@@ -241,7 +241,7 @@ export function buildBoundaryComplianceData(range, trendYear = 2026, trendMonth 
       gapIcon: 'fa-chart-line-down',
       gapColor: 'var(--hz-red-700)',
       gapBg: 'var(--hz-red-50)',
-      barW: `${fmt1(value)}%`,
+      barW: pctCss(value),
       showBar: true,
       legend: [
         { text: `Patuh: ${bcCompliantRegs} regulasi`, color: '#159367' },
@@ -393,7 +393,7 @@ export function buildProductionData(range, trendYear = 2026, plan = 'R3MMP') {
       plan: planUnavailable ? 'Tidak tersedia' : `${fmt0(targetTon)} ton`,
       actual: `${fmt0(actual)} ton`,
       ach: planUnavailable ? 'Tidak tersedia' : `${fmt1(ach)}%`,
-      bar: `${fmt1(Math.min(ach, 100))}%`,
+      bar: pctCss(Math.min(ach, 100)),
       tone: toneStandard(ach),
       noTarget: planUnavailable,
     }
@@ -453,7 +453,7 @@ export function buildObDistanceData(range, distTrendYear = 2026, volTrendYear = 
       value: `${fmt0(actualM)} m`,
       chip: fmtSigned1(distPct - 100),
       cls: distPct >= 100 ? CHIP_SUCCESS : CHIP_DANGER,
-      barW: `${fmt1(distPct)}%`,
+      barW: pctCss(distPct),
       legend: [
         { text: `Actual ${fmt1(distPct)}%`, color: '#006CEB' },
         { text: 'Target 100%', color: '#8490A1' },
@@ -464,7 +464,7 @@ export function buildObDistanceData(range, distTrendYear = 2026, volTrendYear = 
       value: `${fmt0(volActual)} BCM`,
       chip: fmtSigned1(volPct - 100),
       cls: volPct >= 100 ? CHIP_SUCCESS : CHIP_DANGER,
-      barW: `${fmt1(volPct)}%`,
+      barW: pctCss(volPct),
       legend: [
         { text: `Actual ${fmt1(volPct)}%`, color: '#006CEB' },
         { text: 'Target 100%', color: '#8490A1' },
@@ -495,14 +495,14 @@ export function buildObDistanceData(range, distTrendYear = 2026, volTrendYear = 
     const actual = scaleValue(r.baseActual, range, OB, `ob.dist.row.${r.site}.actual`)
     const plan = scaleValue(r.basePlan, range, OB, `ob.dist.row.${r.site}.plan`)
     const ach = jitterValue(r.baseAch, range, OB, `ob.dist.row.${r.site}.ach`, 5, 40, 100)
-    return { site: r.site, actual: fmt0(actual), plan: fmt2(plan), ach: `${fmt0(ach)}%`, bar: `${fmt0(Math.min(ach, 100))}%`, tone: toneStandard(ach) }
+    return { site: r.site, actual: fmt0(actual), plan: fmt2(plan), ach: `${fmt0(ach)}%`, bar: pctCss(Math.min(ach, 100), 0), tone: toneStandard(ach) }
   })
 
   const obVolRows = obVolRowsMeta.map((r) => {
     const actual = scaleValue(r.baseActual, range, OB, `ob.vol.row.${r.site}.actual`)
     const plan = scaleValue(r.basePlan, range, OB, `ob.vol.row.${r.site}.plan`)
     const ach = jitterValue(r.baseAch, range, OB, `ob.vol.row.${r.site}.ach`, 4, 1, 60)
-    return { site: r.site, actual: fmt0(actual), plan: fmt0(plan), ach: `${fmt0(ach)}%`, bar: `${fmt0(Math.min(ach, 100))}%`, tone: toneStandard(ach) }
+    return { site: r.site, actual: fmt0(actual), plan: fmt0(plan), ach: `${fmt0(ach)}%`, bar: pctCss(Math.min(ach, 100), 0), tone: toneStandard(ach) }
   })
 
   return { obKpis4b, obSeries, obVolSeries, obDistRows, obVolRows }

@@ -91,6 +91,11 @@ export const fmt2 = (n) => n.toLocaleString('de-DE', { minimumFractionDigits: 2,
 export const fmtSigned1 = (n) => `${n >= 0 ? '+' : '−'}${fmt1(Math.abs(n))}%`
 export const fmtHa0 = fmt0
 
+// CSS percentages (bar widths) must stay locale-independent — the fmt*
+// helpers' comma decimal separator makes an invalid `style.width` value,
+// which the browser silently drops. Always use this for bar/progress widths.
+export const pctCss = (n, decimals = 1) => `${n.toFixed(decimals)}%`
+
 export function toneStandard(ach) {
   if (ach < 50) return 'var(--hz-red-500)'
   if (ach < 100) return 'var(--hz-horizon-primary)'

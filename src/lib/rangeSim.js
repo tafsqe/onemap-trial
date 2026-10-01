@@ -96,8 +96,14 @@ export const fmtHa0 = fmt0
 // which the browser silently drops. Always use this for bar/progress widths.
 export const pctCss = (n, decimals = 1) => `${n.toFixed(decimals)}%`
 
+// Achievement colour convention for every bar: red below 50%, blue from 50%
+// to under 100%, green at or above 100%.
+export const TONE_RED = '#D92222'
+export const TONE_BLUE = '#006CEB'
+export const TONE_GREEN = '#159367'
+
 export function toneStandard(ach) {
-  if (ach < 50) return 'var(--hz-red-500)'
-  if (ach < 100) return 'var(--hz-horizon-primary)'
-  return 'var(--hz-green-600)'
+  if (ach < 50) return TONE_RED
+  if (ach < 100) return TONE_BLUE
+  return TONE_GREEN
 }

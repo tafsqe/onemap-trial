@@ -125,7 +125,7 @@ export function buildReadyCards(range) {
       unit: 'Aktual',
       target: '/production',
       catValues: [Math.min(100, prValue), Math.max(0, 100 - prValue)],
-      catLabels: [{ text: `Aktual ${fmt0(prTotalTon)} ton`, color: '#006CEB' }],
+      catLabels: [{ text: `Aktual ${fmt0(prTotalTon)} ton`, color: toneStandard(prValue) }],
       remainderColor: '#EEF0F5',
       iconBg: 'var(--hz-azure-50)',
       iconColor: 'var(--hz-horizon-primary)',
@@ -150,7 +150,7 @@ export function buildReadyCards(range) {
       unit: 'Aktual',
       target: '/ob-distance',
       catValues: [Math.min(100, obValue), Math.max(0, 100 - obValue)],
-      catLabels: [{ text: `Aktual ${fmt0(aktualM)} m`, color: '#006CEB' }],
+      catLabels: [{ text: `Aktual ${fmt0(aktualM)} m`, color: toneStandard(obValue) }],
       remainderColor: '#EEF0F5',
       iconBg: 'var(--hz-azure-50)',
       iconColor: 'var(--hz-horizon-primary)',
@@ -400,7 +400,7 @@ export function buildProductionData(range, trendYear = 2026, plan = 'R3MMP') {
       noTarget: planUnavailable,
       barW: pctCss(Math.min(100, Math.max(0, coalLegendPct))),
       legend: [
-        { text: `Aktual ${fmt1(coalLegendPct)}%`, color: '#006CEB' },
+        { text: `Aktual ${fmt1(coalLegendPct)}%`, color: toneStandard(coalLegendPct) },
         { text: 'Target 100%', color: '#8490A1' },
       ],
     },
@@ -415,7 +415,7 @@ export function buildProductionData(range, trendYear = 2026, plan = 'R3MMP') {
       noTarget: planUnavailable,
       barW: pctCss(Math.min(100, Math.max(0, shipmentLegendPct))),
       legend: [
-        { text: `Aktual ${fmt1(shipmentLegendPct)}%`, color: '#006CEB' },
+        { text: `Aktual ${fmt1(shipmentLegendPct)}%`, color: toneStandard(shipmentLegendPct) },
         { text: 'Target 100%', color: '#8490A1' },
       ],
     },
@@ -533,7 +533,7 @@ export function buildObDistanceData(range, distTrendYear = 2026, volTrendYear = 
       cls: distPct >= 100 ? CHIP_SUCCESS : CHIP_DANGER,
       barW: pctCss(distPct),
       legend: [
-        { text: `Aktual ${fmt1(distPct)}%`, color: '#006CEB' },
+        { text: `Aktual ${fmt1(distPct)}%`, color: toneStandard(distPct) },
         { text: 'Target 100%', color: '#8490A1' },
       ],
     },
@@ -544,7 +544,7 @@ export function buildObDistanceData(range, distTrendYear = 2026, volTrendYear = 
       cls: volPct >= 100 ? CHIP_SUCCESS : CHIP_DANGER,
       barW: pctCss(volPct),
       legend: [
-        { text: `Aktual ${fmt1(volPct)}%`, color: '#006CEB' },
+        { text: `Aktual ${fmt1(volPct)}%`, color: toneStandard(volPct) },
         { text: 'Target 100%', color: '#8490A1' },
       ],
     },

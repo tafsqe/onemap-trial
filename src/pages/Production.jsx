@@ -5,6 +5,7 @@ import PageShell from '../components/PageShell.jsx'
 import CategoryBar from '../components/CategoryBar.jsx'
 import AchievementBar from '../components/AchievementBar.jsx'
 import { ComboChart } from '../lib/ds.js'
+import { TONE_BLUE, TONE_GREEN, TONE_RED, toneStandard } from '../lib/rangeSim.js'
 import {
   PRODUCTION_BASELINE_RANGE,
   buildProductionData,
@@ -115,7 +116,15 @@ export default function Production() {
           <div className="flex flex-col gap-3 p-6 pt-4">
             <div className="flex flex-wrap items-center gap-4 pl-18" style={{ color: 'var(--hz-text-secondary, #505D6E)' }}>
               <span className="flex items-center gap-1.5 text-xs">
-                <span className="inline-block h-2 w-2 rounded-sm" style={{ background: '#006CEB' }} />
+                {planUnavailable ? (
+                  <span className="inline-block h-2 w-2 rounded-sm" style={{ background: TONE_BLUE }} />
+                ) : (
+                  <span className="inline-flex gap-px">
+                    {[TONE_RED, TONE_BLUE, TONE_GREEN].map((c) => (
+                      <span key={c} className="inline-block h-2 w-1 first:rounded-l-sm last:rounded-r-sm" style={{ background: c }} />
+                    ))}
+                  </span>
+                )}
                 Aktual
                 {planUnavailable && (
                   <span className="ml-1.5 text-neutral-400">— Target & Achievement: Tidak tersedia untuk Plan {plan}</span>
@@ -141,6 +150,7 @@ export default function Production() {
                 barCategories={prodBarCats}
                 lineCategories={prodLineCats}
                 barColors={prodColors}
+                barColorFn={(key, row) => (key === 'Aktual' && row.Achievement != null ? toneStandard(row.Achievement) : undefined)}
                 lineColors={prodLineColors}
                 valueFormatter={tonNumFmt}
                 lineValueFormatter={pctWholeFmt}

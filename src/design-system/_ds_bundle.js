@@ -1037,6 +1037,7 @@ function ComboChart({
   showGridLines = true,
   barMaxValue,
   lineMaxValue,
+  barColorFn,
   yAxisWidth = 56,
   rightAxisWidth = 48,
   className = '',
@@ -1204,7 +1205,7 @@ function ComboChart({
       width: Math.max(1, barSize - 2),
       height: Math.max(1, len),
       rx: barRadius,
-      fill: s.color
+      fill: barColorFn && barColorFn(s.key, data[i]) || s.color
     });
   }))), lines.map(s => {
     const pts = data.map((r, i) => [cx(i), yR(Number(r[s.key]) || 0)]);

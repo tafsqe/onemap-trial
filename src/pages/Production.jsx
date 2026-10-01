@@ -8,10 +8,6 @@ import { ComboChart } from '../lib/ds.js'
 import {
   PRODUCTION_BASELINE_RANGE,
   buildProductionData,
-  prodBarCats,
-  prodLineCats,
-  prodColors,
-  prodLineColors,
   prodTrendYears,
   prodPlanOptions,
   tonNumFmt,
@@ -23,7 +19,10 @@ export default function Production() {
   const [range, setRange] = useState(PRODUCTION_BASELINE_RANGE)
   const [trendYear, setTrendYear] = useState(2026)
   const [plan, setPlan] = useState('R3MMP')
-  const { prodKpis3a, prodSeries, prodRows } = useMemo(() => buildProductionData(range, trendYear), [range, trendYear])
+  const { prodKpis3a, prodSeries, prodRows, prodBarCats, prodLineCats, prodColors, prodLineColors, planUnavailable } = useMemo(
+    () => buildProductionData(range, trendYear, plan),
+    [range, trendYear, plan],
+  )
 
   return (
     <PageShell active="Dashboard">
@@ -79,7 +78,11 @@ export default function Production() {
                   <span className="text-sm text-neutral-500">{k.unit}</span>
                 </div>
                 <div className="mt-4">
-                  <CategoryBar barPct={k.barW} fillColor={k.legend[0].color} remainderColor="#EEF0F5" legend={k.legend} />
+                  {k.noTarget ? (
+                    <span className="text-xs text-neutral-400">Target: Tidak tersedia</span>
+                  ) : (
+                    <CategoryBar barPct={k.barW} fillColor={k.legend[0].color} remainderColor="#EEF0F5" legend={k.legend} />
+                  )}
                 </div>
               </div>
             </div>
@@ -102,6 +105,9 @@ export default function Production() {
                 ))}
               </select>
               <span className="text-xs text-neutral-500">Semua angka dalam Ton</span>
+              {planUnavailable && (
+                <span className="text-xs text-neutral-400">Target & Achievement: Tidak tersedia untuk Plan {plan}</span>
+              )}
             </div>
           </div>
           <div className="flex flex-col gap-3 p-6 pt-4">
@@ -149,9 +155,15 @@ export default function Production() {
                 <tr key={r.pit} className="hover:bg-neutral-50">
                   <td className="border-b border-neutral-200 px-4 py-3.5 font-semibold">{r.pit}</td>
                   <td className="border-b border-neutral-200 px-4 py-3.5 text-right font-semibold">{r.actual}</td>
-                  <td className="border-b border-neutral-200 px-4 py-3.5 text-right text-neutral-500">{r.plan}</td>
+                  <td className="border-b border-neutral-200 px-4 py-3.5 text-right text-neutral-500">
+                    {r.noTarget ? <span className="text-neutral-400">Tidak tersedia</span> : r.plan}
+                  </td>
                   <td className="border-b border-neutral-200 px-4 py-3.5">
-                    <AchievementBar barPct={r.bar} label={r.ach} tone={r.tone} />
+                    {r.noTarget ? (
+                      <span className="text-[12.5px] text-neutral-400">Tidak tersedia</span>
+                    ) : (
+                      <AchievementBar barPct={r.bar} label={r.ach} tone={r.tone} />
+                    )}
                   </td>
                 </tr>
               ))}

@@ -292,11 +292,6 @@ export function buildBoundaryComplianceData(range, trendYear = 2026, trendMonth 
 export const PRODUCTION_BASELINE_RANGE = { start: '2026-08-01', end: '2026-08-31' }
 const PR = PRODUCTION_BASELINE_RANGE
 
-export const prodBarCats = ['Actual', 'Target']
-export const prodLineCats = ['Achievement']
-export const prodColors = ['blue', 'neutral']
-export const prodLineColors = ['orange']
-
 const prodMonths = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
 const prodActualBase = [19600, 20800, 22400, 23600, 25000, 26200, 27800, 29000, 29600, 30400, 31200, 32000]
 
@@ -313,8 +308,13 @@ export const prodTrendYears = [2024, 2025, 2026]
 
 export const prodPlanOptions = ['Budget', 'Commitment', 'RKAB', 'R3MMP', 'Improvement']
 
-export function buildProductionData(range, trendYear = 2026) {
+// Example case: the "Budget" plan has no data loaded for this period. Actual
+// production is always measured independently of plan, so only target-
+// relative figures (gap chips, achievement bars, chart target/achievement
+// series) fall back to "Tidak tersedia" — the actual values stay real.
+export function buildProductionData(range, trendYear = 2026, plan = 'R3MMP') {
   const dayRatio = rangeDays(range) / rangeDays(PR)
+  const planUnavailable = plan === 'Budget'
 
   const coalValue = scaleValue(14078479, range, PR, 'pr.coal')
   const coalGap = jitterValue(23.2, range, PR, 'pr.coal.gap', 6, -40, 90)
@@ -329,9 +329,10 @@ export function buildProductionData(range, trendYear = 2026) {
       label: 'Coal Getting',
       value: fmt0(coalValue),
       unit: 'Ton',
-      chip: fmtSigned1(coalGap),
-      cls: coalGap >= 0 ? CHIP_SUCCESS : CHIP_DANGER,
+      chip: planUnavailable ? 'Tidak tersedia' : fmtSigned1(coalGap),
+      cls: planUnavailable ? CHIP_NEUTRAL : coalGap >= 0 ? CHIP_SUCCESS : CHIP_DANGER,
       valColor: 'var(--hz-text-primary)',
+      noTarget: planUnavailable,
       barW: '100%',
       legend: [
         { text: `Actual ${fmt1(coalLegendPct)}%`, color: '#006CEB' },
@@ -343,9 +344,10 @@ export function buildProductionData(range, trendYear = 2026) {
       sub: '(All Site)',
       value: fmt0(shipmentValue),
       unit: 'Ton',
-      chip: fmtSigned1(shipmentGap),
-      cls: shipmentGap >= 0 ? CHIP_SUCCESS : CHIP_DANGER,
+      chip: planUnavailable ? 'Tidak tersedia' : fmtSigned1(shipmentGap),
+      cls: planUnavailable ? CHIP_NEUTRAL : shipmentGap >= 0 ? CHIP_SUCCESS : CHIP_DANGER,
       valColor: 'var(--hz-text-primary)',
+      noTarget: planUnavailable,
       barW: '100%',
       legend: [
         { text: `Actual ${fmt1(shipmentLegendPct)}%`, color: '#006CEB' },
@@ -353,6 +355,8 @@ export function buildProductionData(range, trendYear = 2026) {
       ],
     },
     {
+      // Always unavailable — a separate, permanent placeholder (inventory
+      // system isn't integrated yet) independent of the plan selection.
       label: 'Coal Inventory',
       value: '—',
       unit: 'Ton',
@@ -378,22 +382,27 @@ export function buildProductionData(range, trendYear = 2026) {
   const targetSeries = prodMonths.map(() => 20000 * dayRatio)
   const achievementSeries = actualSeries.map((a, i) => (a / targetSeries[i]) * 100)
   const prodSeries = prodMonths.map((day, i) => ({ day, Actual: actualSeries[i], Target: targetSeries[i], Achievement: achievementSeries[i] }))
+  const prodBarCats = planUnavailable ? ['Actual'] : ['Actual', 'Target']
+  const prodLineCats = planUnavailable ? [] : ['Achievement']
+  const prodColors = planUnavailable ? ['blue'] : ['blue', 'neutral']
+  const prodLineColors = planUnavailable ? [] : ['orange']
 
   const prodRows = prodRowsMeta.map((r) => {
-    const plan = scaleValue(r.basePlan, range, PR, `pr.row.${r.pit}.plan`)
+    const targetTon = scaleValue(r.basePlan, range, PR, `pr.row.${r.pit}.plan`)
     const actual = scaleValue(r.baseActual, range, PR, `pr.row.${r.pit}.actual`)
     const ach = jitterValue(r.baseAch, range, PR, `pr.row.${r.pit}.ach`, 6, 10, 180)
     return {
       pit: r.pit,
-      plan: `${fmt0(plan)} ton`,
+      plan: planUnavailable ? 'Tidak tersedia' : `${fmt0(targetTon)} ton`,
       actual: `${fmt0(actual)} ton`,
-      ach: `${fmt1(ach)}%`,
+      ach: planUnavailable ? 'Tidak tersedia' : `${fmt1(ach)}%`,
       bar: `${fmt1(Math.min(ach, 100))}%`,
       tone: toneStandard(ach),
+      noTarget: planUnavailable,
     }
   })
 
-  return { prodKpis3a, prodSeries, prodRows }
+  return { prodKpis3a, prodSeries, prodRows, prodBarCats, prodLineCats, prodColors, prodLineColors, planUnavailable }
 }
 
 // ---------------------------------------------------------------------------

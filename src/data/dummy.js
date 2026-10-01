@@ -29,10 +29,22 @@ const bcMatrixMeta = [
   { label: 'RR', icon: 'fa-shield-alt', violation: false },
   { label: 'RPT', icon: 'fa-align-left', violation: false },
 ]
-const bcTotalRegs = bcMatrixMeta.length
-const bcCompliantRegs = bcMatrixMeta.filter((r) => !r.violation).length
-const bcViolationRegs = bcTotalRegs - bcCompliantRegs
-const bcComplianceValue = (bcCompliantRegs / bcTotalRegs) * 100
+
+// Both IUPK and AMDAL violations were first detected on this date — any
+// `asOfDate`/range end before it is a fully-compliant example (100%, nothing
+// outside boundary), exercised via the Boundary Compliance date picker.
+const BC_VIOLATION_START = '2026-08-25'
+
+// Shared by the Overview landing card and the Boundary Compliance detail
+// page so both always agree on the same % for the same end date.
+function bcComplianceFor(endDate) {
+  const violationsActive = endDate >= BC_VIOLATION_START
+  const matrix = violationsActive ? bcMatrixMeta : bcMatrixMeta.map((r) => ({ ...r, violation: false }))
+  const totalRegs = matrix.length
+  const compliantRegs = matrix.filter((r) => !r.violation).length
+  const violationRegs = totalRegs - compliantRegs
+  return { matrix, totalRegs, compliantRegs, violationRegs, violationsActive, value: (compliantRegs / totalRegs) * 100 }
+}
 
 // ---------------------------------------------------------------------------
 // Overview (1a)
@@ -45,11 +57,11 @@ export function buildReadyCards(range) {
   // Same compliance formula as the Boundary Compliance detail page (compliant
   // / total regulations) — no independent simulation, so the two pages never
   // disagree on this number.
-  const bcValue = bcComplianceValue
+  const { value: bcValue, compliantRegs: bcCompliantRegs, violationRegs: bcViolationRegs, violationsActive } = bcComplianceFor(range.end)
   const bcGap = bcValue - 100
-  const iupkHa = scaleValue(30, range, OV, 'ov.bc.iupk')
-  const amdalHa = scaleValue(50, range, OV, 'ov.bc.amdal')
-  const boundaryLain = Math.max(0, Math.round(scaleValue(5, range, OV, 'ov.bc.lain')))
+  const iupkHa = violationsActive ? scaleValue(30, range, OV, 'ov.bc.iupk') : 0
+  const amdalHa = violationsActive ? scaleValue(50, range, OV, 'ov.bc.amdal') : 0
+  const boundaryLain = violationsActive ? Math.max(0, Math.round(scaleValue(5, range, OV, 'ov.bc.lain'))) : 0
 
   const prValue = jitterValue(120.1, range, OV, 'ov.pr.value', 8, 60, 180)
   const prGap = jitterValue(20.1, range, OV, 'ov.pr.gap', 6, -40, 80)
@@ -72,19 +84,21 @@ export function buildReadyCards(range) {
       unit: 'Mematuhi regulasi',
       target: '/boundary-compliance',
       catValues: [bcValue, 100 - bcValue],
-      catLabels: [
-        { text: `Patuh: ${bcCompliantRegs} regulasi`, color: '#159367' },
-        { text: `Melanggar: ${bcViolationRegs} regulasi`, color: '#D92222' },
-      ],
+      catLabels: bcViolationRegs > 0
+        ? [
+            { text: `Patuh: ${bcCompliantRegs} regulasi`, color: '#159367' },
+            { text: `Melanggar: ${bcViolationRegs} regulasi`, color: '#D92222' },
+          ]
+        : [{ text: `Patuh: ${bcCompliantRegs} regulasi`, color: '#159367' }],
       remainderColor: '#D92222',
       iconBg: 'var(--hz-red-50)',
       iconColor: 'var(--hz-red-600)',
       targetLabel: 'Target',
       targetVal: '100%',
       gapTxt: fmtSigned1(bcGap),
-      gapIcon: 'fa-chart-line-down',
-      gapColor: 'var(--hz-red-700)',
-      gapBg: 'var(--hz-red-50)',
+      gapIcon: bcGap >= 0 ? 'fa-check' : 'fa-chart-line-down',
+      gapColor: bcGap >= 0 ? 'var(--hz-green-700)' : 'var(--hz-red-700)',
+      gapBg: bcGap >= 0 ? 'var(--hz-green-50)' : 'var(--hz-red-50)',
       facts: [
         { label: 'IUPK', value: `${fmt0(iupkHa)} Ha`, note: 'di luar batas' },
         { label: 'AMDAL', value: `${fmt0(amdalHa)} Ha`, note: 'di luar batas' },
@@ -229,7 +243,7 @@ const bcViolationCell = (ha) => ({ bg: 'var(--hz-red-600)', fg: '#fff', icon: 'f
 export const bcTrendYears = [2024, 2025, 2026]
 
 export function buildBoundaryComplianceData(range, trendYear = 2026, trendMonth = 8) {
-  const value = bcComplianceValue
+  const { matrix: activeMatrix, totalRegs, compliantRegs, violationRegs, value } = bcComplianceFor(range.end)
   const gap = value - 100
 
   const bcKpis3 = [
@@ -238,24 +252,29 @@ export function buildBoundaryComplianceData(range, trendYear = 2026, trendMonth 
       value: fmt1(value),
       unit: '%',
       chip: fmtSigned1(gap),
-      gapIcon: 'fa-chart-line-down',
-      gapColor: 'var(--hz-red-700)',
-      gapBg: 'var(--hz-red-50)',
+      gapIcon: gap >= 0 ? 'fa-check' : 'fa-chart-line-down',
+      gapColor: gap >= 0 ? 'var(--hz-green-700)' : 'var(--hz-red-700)',
+      gapBg: gap >= 0 ? 'var(--hz-green-50)' : 'var(--hz-red-50)',
       barW: pctCss(value),
       showBar: true,
-      legend: [
-        { text: `Patuh: ${bcCompliantRegs} regulasi`, color: '#159367' },
-        { text: `Melanggar: ${bcViolationRegs} regulasi`, color: '#D92222' },
-      ],
+      legend:
+        violationRegs > 0
+          ? [
+              { text: `Patuh: ${compliantRegs} regulasi`, color: '#159367' },
+              { text: `Melanggar: ${violationRegs} regulasi`, color: '#D92222' },
+            ]
+          : [{ text: `Patuh: ${compliantRegs} regulasi`, color: '#159367' }],
     },
-    { label: 'Total boundary dilanggar', value: String(bcViolationRegs), unit: 'boundary', chip: '', showBar: false },
-    { label: 'Boundaries checked', value: String(bcTotalRegs), unit: 'boundary', chip: '', showBar: false },
+    { label: 'Total boundary dilanggar', value: String(violationRegs), unit: 'boundary', chip: '', showBar: false },
+    { label: 'Boundaries checked', value: String(totalRegs), unit: 'boundary', chip: '', showBar: false },
   ]
 
   // Mingguan is scoped to one month + year: the 52-week shape is split into
   // 12 uneven chunks (~4-5 weeks each) and only the selected month's weeks
   // are shown, so the x-axis never has to cram in a full year of weeks.
-  const weeklyActual = anchorSeries(bcWeeklyActualBase, value, range, `bc.trend.weekly.${trendYear}`)
+  // Compliance is a share of regulations, so it can never exceed 100% —
+  // anchorSeries' wobble isn't aware of that cap, hence the clamp.
+  const weeklyActual = anchorSeries(bcWeeklyActualBase, value, range, `bc.trend.weekly.${trendYear}`).map((v) => Math.min(100, v))
   const weeksPerMonth = 52 / 12
   const showAllMonths = trendMonth === -1
   const weekStart = showAllMonths ? 0 : Math.round(trendMonth * weeksPerMonth)
@@ -263,10 +282,10 @@ export function buildBoundaryComplianceData(range, trendYear = 2026, trendMonth 
   const bcTrend = bcWeeks.slice(weekStart, weekEnd).map((week, i) => ({ week, Actual: weeklyActual[weekStart + i], Target: 100 }))
 
   // Bulanan is scoped to a year and always shows the full Jan-Des shape.
-  const monthlyActual = anchorSeries(bcMonthlyActualBase, value, range, `bc.trend.monthly.${trendYear}`)
+  const monthlyActual = anchorSeries(bcMonthlyActualBase, value, range, `bc.trend.monthly.${trendYear}`).map((v) => Math.min(100, v))
   const bcTrendMonthly = bcMonths.map((month, i) => ({ month, Actual: monthlyActual[i], Target: 100 }))
 
-  const bcMatrix = bcMatrixMeta.map((r) => {
+  const bcMatrix = activeMatrix.map((r) => {
     const ha = r.baseHa ? scaleValue(r.baseHa, range, BC, `bc.matrix.${r.label}`) : 0
     return {
       label: r.label,
@@ -275,10 +294,10 @@ export function buildBoundaryComplianceData(range, trendYear = 2026, trendMonth 
       statusCls: r.violation ? CHIP_DANGER : CHIP_SUCCESS,
       statusIcon: r.violation ? 'fa-exclamation-triangle' : 'fa-check-circle',
       statusTxt: r.violation ? 'Violation' : 'Compliant',
-      cells: bcMatrixSites.map((site) => (site === r.site ? bcViolationCell(ha) : bcOkCell)),
+      cells: bcMatrixSites.map((site) => (r.violation && site === r.site ? bcViolationCell(ha) : bcOkCell)),
       allSites: !!r.allSites,
       notAllSites: !r.allSites,
-      allSitesCell: r.allSites ? bcViolationCell(ha) : null,
+      allSitesCell: r.allSites ? (r.violation ? bcViolationCell(ha) : bcOkCell) : null,
     }
   })
 

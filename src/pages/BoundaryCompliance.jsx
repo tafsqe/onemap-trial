@@ -65,7 +65,7 @@ export default function BoundaryCompliance() {
                   </div>
                   {k.showBar && (
                     <div className="mt-4">
-                      <CategoryBar barPct={k.barW} fillColor={k.legend[0].color} remainderColor="#EEF0F5" legend={k.legend} direction="column" />
+                      <CategoryBar barPct={k.barW} fillColor={k.legend[0].color} remainderColor={k.legend[1]?.color ?? "#EEF0F5"} legend={k.legend} direction="column" />
                     </div>
                   )}
                 </div>

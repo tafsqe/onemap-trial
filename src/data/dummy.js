@@ -68,13 +68,13 @@ export function buildReadyCards(range) {
   const boundaryLain = violationsActive ? Math.max(0, Math.round(scaleValue(5, range, OV, 'ov.bc.lain'))) : 0
 
   const belowTarget = range.end === OVERVIEW_BELOW_TARGET_DATE
-  const prValue = belowTarget ? 82.4 : jitterValue(120.1, range, OV, 'ov.pr.value', 8, 60, 180)
+  const prValue = belowTarget ? 82.4 : jitterValue(120.1, range, OV, 'ov.pr.value', 30, 60, 160)
   const prGap = prValue - 100
   const prTotalTon = scaleValue(28715827, range, OV, 'ov.pr.total')
   const coalGetting = scaleValue(14078479, range, OV, 'ov.pr.coal')
   const shipment = scaleValue(14078479, range, OV, 'ov.pr.ship')
 
-  const obValue = belowTarget ? 74.6 : jitterValue(87.2, range, OV, 'ov.ob.value', 5, 40, 100)
+  const obValue = belowTarget ? 74.6 : jitterValue(87.2, range, OV, 'ov.ob.value', 22, 50, 125)
   const obGap = obValue - 100
   const targetM = scaleValue(2994.15, range, OV, 'ov.ob.target', 0.03)
   const aktualM = (obValue / 100) * targetM
@@ -146,7 +146,7 @@ export function buildReadyCards(range) {
       value: fmt1(obValue),
       unit: 'Actual',
       target: '/ob-distance',
-      catValues: [obValue, 100 - obValue],
+      catValues: [Math.min(100, obValue), Math.max(0, 100 - obValue)],
       catLabels: [{ text: `Actual ${fmt0(aktualM)} m`, color: '#006CEB' }],
       remainderColor: '#EEF0F5',
       iconBg: 'var(--hz-azure-50)',

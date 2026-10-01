@@ -364,10 +364,7 @@ export function buildProductionData(range, trendYear = 2026, plan = 'R3MMP') {
       cls: CHIP_NEUTRAL,
       valColor: 'var(--hz-neutral-400)',
       barW: '0%',
-      legend: [
-        { text: 'Actual 0%', color: '#C6CDD7' },
-        { text: 'Target 0%', color: '#E4E8EE' },
-      ],
+      legend: [],
     },
   ]
 

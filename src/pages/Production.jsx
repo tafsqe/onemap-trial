@@ -81,7 +81,7 @@ export default function Production() {
                   {k.noTarget ? (
                     <span className="text-xs text-neutral-400">Target: Tidak tersedia</span>
                   ) : (
-                    <CategoryBar barPct={k.barW} fillColor={k.legend[0].color} remainderColor="#EEF0F5" legend={k.legend} />
+                    <CategoryBar barPct={k.barW} fillColor={k.legend[0]?.color} remainderColor="#EEF0F5" legend={k.legend} />
                   )}
                 </div>
               </div>

@@ -83,7 +83,7 @@ function SiteTable({ title, rows }) {
                 Site Area
               </th>
               <th className="border-b border-neutral-200 bg-neutral-50 px-4 py-3.5 text-right text-xs font-semibold tracking-wide text-neutral-500 uppercase">
-                Actual
+                Aktual
               </th>
               <th className="border-b border-neutral-200 bg-neutral-50 px-4 py-3.5 text-right text-xs font-semibold tracking-wide text-neutral-500 uppercase">
                 TARGET

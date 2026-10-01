@@ -119,10 +119,10 @@ export function buildReadyCards(range) {
       idn: 'Kepatuhan Produksi Coal',
       icon: 'fa-mountain',
       value: fmt1(prValue),
-      unit: 'Actual',
+      unit: 'Aktual',
       target: '/production',
       catValues: [Math.min(100, prValue), Math.max(0, 100 - prValue)],
-      catLabels: [{ text: `Actual ${fmt0(prTotalTon)} ton`, color: '#006CEB' }],
+      catLabels: [{ text: `Aktual ${fmt0(prTotalTon)} ton`, color: '#006CEB' }],
       remainderColor: '#EEF0F5',
       iconBg: 'var(--hz-azure-50)',
       iconColor: 'var(--hz-horizon-primary)',
@@ -144,10 +144,10 @@ export function buildReadyCards(range) {
       idn: 'Jarak Angkut Overburden',
       icon: 'fa-route',
       value: fmt1(obValue),
-      unit: 'Actual',
+      unit: 'Aktual',
       target: '/ob-distance',
       catValues: [Math.min(100, obValue), Math.max(0, 100 - obValue)],
-      catLabels: [{ text: `Actual ${fmt0(aktualM)} m`, color: '#006CEB' }],
+      catLabels: [{ text: `Aktual ${fmt0(aktualM)} m`, color: '#006CEB' }],
       remainderColor: '#EEF0F5',
       iconBg: 'var(--hz-azure-50)',
       iconColor: 'var(--hz-horizon-primary)',
@@ -239,7 +239,7 @@ const bcWeeklyActualBase = Array.from({ length: 52 }, (_, i) => {
 const bcMonths = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des']
 const bcMonthlyActualBase = [98.4, 97.6, 96.9, 96.0, 95.2, 94.5, 93.9, 93.3, 92.8, 92.1, 91.5, 90.8]
 
-export const bcCats = ['Actual', 'Target']
+export const bcCats = ['Aktual', 'Target']
 export const bcColors = ['blue', 'neutral']
 export const bcDashed = ['Target']
 
@@ -287,11 +287,11 @@ export function buildBoundaryComplianceData(range, trendYear = 2026, trendMonth 
   const showAllMonths = trendMonth === -1
   const weekStart = showAllMonths ? 0 : Math.round(trendMonth * weeksPerMonth)
   const weekEnd = showAllMonths ? 52 : Math.round((trendMonth + 1) * weeksPerMonth)
-  const bcTrend = bcWeeks.slice(weekStart, weekEnd).map((week, i) => ({ week, Actual: weeklyActual[weekStart + i], Target: 100 }))
+  const bcTrend = bcWeeks.slice(weekStart, weekEnd).map((week, i) => ({ week, Aktual: weeklyActual[weekStart + i], Target: 100 }))
 
   // Bulanan is scoped to a year and always shows the full Jan-Des shape.
   const monthlyActual = anchorSeries(bcMonthlyActualBase, value, range, `bc.trend.monthly.${trendYear}`).map((v) => Math.min(100, v))
-  const bcTrendMonthly = bcMonths.map((month, i) => ({ month, Actual: monthlyActual[i], Target: 100 }))
+  const bcTrendMonthly = bcMonths.map((month, i) => ({ month, Aktual: monthlyActual[i], Target: 100 }))
 
   const bcMatrix = activeMatrix.map((r) => {
     const ha = r.baseHa ? scaleValue(r.baseHa, range, BC, `bc.matrix.${r.label}`) : 0
@@ -362,7 +362,7 @@ export function buildProductionData(range, trendYear = 2026, plan = 'R3MMP') {
       noTarget: planUnavailable,
       barW: '100%',
       legend: [
-        { text: `Actual ${fmt1(coalLegendPct)}%`, color: '#006CEB' },
+        { text: `Aktual ${fmt1(coalLegendPct)}%`, color: '#006CEB' },
         { text: 'Target 100%', color: '#8490A1' },
       ],
     },
@@ -377,7 +377,7 @@ export function buildProductionData(range, trendYear = 2026, plan = 'R3MMP') {
       noTarget: planUnavailable,
       barW: '100%',
       legend: [
-        { text: `Actual ${fmt1(shipmentLegendPct)}%`, color: '#006CEB' },
+        { text: `Aktual ${fmt1(shipmentLegendPct)}%`, color: '#006CEB' },
         { text: 'Target 100%', color: '#8490A1' },
       ],
     },
@@ -405,8 +405,8 @@ export function buildProductionData(range, trendYear = 2026, plan = 'R3MMP') {
       : anchorSeries(prodActualBase, endValue, range, `pr.chart.actual.${trendYear}`)
   const targetSeries = prodMonths.map(() => 20000 * dayRatio)
   const achievementSeries = actualSeries.map((a, i) => (a / targetSeries[i]) * 100)
-  const prodSeries = prodMonths.map((day, i) => ({ day, Actual: actualSeries[i], Target: targetSeries[i], Achievement: achievementSeries[i] }))
-  const prodBarCats = planUnavailable ? ['Actual'] : ['Actual', 'Target']
+  const prodSeries = prodMonths.map((day, i) => ({ day, Aktual: actualSeries[i], Target: targetSeries[i], Achievement: achievementSeries[i] }))
+  const prodBarCats = planUnavailable ? ['Aktual'] : ['Aktual', 'Target']
   const prodLineCats = planUnavailable ? [] : ['Achievement']
   const prodColors = planUnavailable ? ['blue'] : ['blue', 'neutral']
   const prodLineColors = planUnavailable ? [] : ['orange']
@@ -436,7 +436,7 @@ export function buildProductionData(range, trendYear = 2026, plan = 'R3MMP') {
 export const OB_BASELINE_RANGE = { start: '2026-09-02', end: '2026-09-09' }
 const OB = OB_BASELINE_RANGE
 
-export const obBarCats = ['Actual', 'Target']
+export const obBarCats = ['Aktual', 'Target']
 export const obLineCats = ['Achievement']
 export const obBarColors = ['blue', 'neutral']
 export const obLineColors = ['orange']
@@ -482,7 +482,7 @@ export function buildObDistanceData(range, distTrendYear = 2026, volTrendYear = 
       cls: distPct >= 100 ? CHIP_SUCCESS : CHIP_DANGER,
       barW: pctCss(distPct),
       legend: [
-        { text: `Actual ${fmt1(distPct)}%`, color: '#006CEB' },
+        { text: `Aktual ${fmt1(distPct)}%`, color: '#006CEB' },
         { text: 'Target 100%', color: '#8490A1' },
       ],
     },
@@ -493,13 +493,13 @@ export function buildObDistanceData(range, distTrendYear = 2026, volTrendYear = 
       cls: volPct >= 100 ? CHIP_SUCCESS : CHIP_DANGER,
       barW: pctCss(volPct),
       legend: [
-        { text: `Actual ${fmt1(volPct)}%`, color: '#006CEB' },
+        { text: `Aktual ${fmt1(volPct)}%`, color: '#006CEB' },
         { text: 'Target 100%', color: '#8490A1' },
       ],
     },
   ]
 
-  // Combo charts (bars = Actual/Target, line = Achievement) so hovering any
+  // Combo charts (bars = Aktual/Target, line = Achievement) so hovering any
   // month shows all three, matching the Production detail page. Target is
   // flat (the page's overall target); Actual is derived from the achievement
   // shape so the three numbers stay internally consistent.
@@ -510,13 +510,13 @@ export function buildObDistanceData(range, distTrendYear = 2026, volTrendYear = 
     distTrendYear === 2026
       ? buildSeries(obDistAchievementBase, distPct, range, OB, 'ob.dist.chart')
       : anchorSeries(obDistAchievementBase, distPct, range, `ob.dist.chart.${distTrendYear}`)
-  const obSeries = obMonths.map((day, i) => ({ day, Actual: (distAchSeries[i] / 100) * targetM, Target: targetM, Achievement: distAchSeries[i] }))
+  const obSeries = obMonths.map((day, i) => ({ day, Aktual: (distAchSeries[i] / 100) * targetM, Target: targetM, Achievement: distAchSeries[i] }))
 
   const volAchSeries =
     volTrendYear === 2026
       ? buildSeries(obVolAchievementBase, volPct, range, OB, 'ob.vol.chart')
       : anchorSeries(obVolAchievementBase, volPct, range, `ob.vol.chart.${volTrendYear}`)
-  const obVolSeries = obMonths.map((day, i) => ({ day, Actual: (volAchSeries[i] / 100) * volTarget, Target: volTarget, Achievement: volAchSeries[i] }))
+  const obVolSeries = obMonths.map((day, i) => ({ day, Aktual: (volAchSeries[i] / 100) * volTarget, Target: volTarget, Achievement: volAchSeries[i] }))
 
   const obDistRows = obDistRowsMeta.map((r) => {
     const actual = scaleValue(r.baseActual, range, OB, `ob.dist.row.${r.site}.actual`)
@@ -541,7 +541,7 @@ export function buildObDistanceData(range, distTrendYear = 2026, volTrendYear = 
 
 export const pctFmt = (v) => v.toFixed(1) + '%'
 export const pctWholeFmt = (v) => v.toFixed(0) + '%'
-// prodSeries' Actual/Target are stored in kt (thousand ton); the chart shows
+// prodSeries' Aktual/Target are stored in kt (thousand ton); the chart shows
 // plain Ton figures (no repeated unit per tick — the card header says
 // "Semua angka dalam Ton" once instead).
 export const tonNumFmt = (v) => fmt0(v * 1000)

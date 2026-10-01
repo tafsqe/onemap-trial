@@ -116,7 +116,7 @@ export default function Production() {
             <div className="flex flex-wrap items-center gap-4 pl-18" style={{ color: 'var(--hz-text-secondary, #505D6E)' }}>
               <span className="flex items-center gap-1.5 text-xs">
                 <span className="inline-block h-2 w-2 rounded-sm" style={{ background: '#006CEB' }} />
-                Actual
+                Aktual
                 {planUnavailable && (
                   <span className="ml-1.5 text-neutral-400">— Target & Achievement: Tidak tersedia untuk Plan {plan}</span>
                 )}
@@ -164,7 +164,7 @@ export default function Production() {
                   SITE
                 </th>
                 <th className="w-37.5 border-b border-neutral-200 bg-neutral-50 px-4 py-3.5 text-right text-xs font-semibold tracking-wide text-neutral-500 uppercase">
-                  Actual
+                  Aktual
                 </th>
                 <th className="w-37.5 border-b border-neutral-200 bg-neutral-50 px-4 py-3.5 text-right text-xs font-semibold tracking-wide text-neutral-500 uppercase">
                   Target
